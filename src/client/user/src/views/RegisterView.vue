@@ -1,46 +1,70 @@
 <template>
-    <div class="login-container">
-        <div class="login-card">
-            <img class="login-logo"
+    <div class="register-container">
+        <div class="register-card">
+            <img class="register-logo"
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/2560px-Instagram_logo.svg.png"
                 alt="Instagram" />
-            <h2 class="login-title">Üye Ol</h2>
-            <form @submit.prevent="handleLogin">
-                <input v-model="username" type="text" class="login-input" placeholder="  Kullanıcı Adı" required />
-                <input v-model="password" type="password" class="login-input" placeholder="  Şifre" required />
-                <button type="submit" class="login-btn">Üye Ol</button>
+            <h2 class="register-title">Üye Ol</h2>
+            <form @submit.prevent="handleRegister">
+                <input v-model="registerModel.username" type="text" class="register-input px-2"
+                    placeholder="Kullanıcı Adı" required />
+                <input v-model="registerModel.fullname" type="text" class="register-input px-2"
+                    placeholder="İsim Soyisim" required />
+                <input v-model="registerModel.email" type="email" class="register-input px-2" placeholder="Mail"
+                    required />
+                <input v-model="registerModel.password" type="password" class="register-input px-2" placeholder="Şifre"
+                    required />
+                <button type="submit" class="register-btn">Üye Ol</button>
             </form>
-            <div class="login-footer">
+            <div class="register-footer">
                 <span>Hesabın var mı?</span>
-                <router-link :to="{ name: 'login' }" class="signup-link">Giriş</router-link>
+                <router-link :to="{ name: 'login' }" class="login-link">Giriş</router-link>
             </div>
         </div>
     </div>
 </template>
 
 <script lang="ts">
+import { RegisterRequestModel } from '@shared/models/auth-models/RegisterRequestModel';
+import { toast } from '../helpers/toast';
+import { nextTick } from 'vue';
+import { RegisterResponseModel } from '@shared/models/auth-models/RegisterResponseModel';
+
 export default {
-    name: 'LoginView',
+    name: 'RegisterView',
     data() {
         return {
-            username: '',
-            password: ''
+            registerModel: new RegisterRequestModel(),
+            registerResponseModel: new RegisterResponseModel(),
         }
     },
     methods: {
-        handleLogin() {
-            // Here you would typically handle the login logic, e.g., API call
-            console.log('Logging in with:', this.username, this.password);
-            // Reset fields after login attempt
-            this.username = '';
-            this.password = '';
+        handleRegister() {
+            this.$bus.emit('isBusy', true);
+            this.$axios.post('auth/register', this.registerModel)
+                .then((response) => {
+                    if (response.data.data) {
+                        toast.success("Kayıt işlemi başarılı!");
+                        this.$router.push({ name: 'login' });
+                        Object.assign(response.data.data, this.registerModel);
+                    } else {
+                        toast.error(response.data.errorMessages || 'Kayıt başarısız.');
+                    }
+                    nextTick(() => {
+                        this.$bus.emit('isBusy', false);
+                    });
+                })
+                .catch(error => {
+                    toast.error(error.response?.data?.errorMessages || 'Kayıt sırasında bir hata oluştu.');
+                    this.$bus.emit('isBusy', false);
+                });
         }
     },
 }
 </script>
 
 <style scoped>
-.login-container {
+.register-container {
     min-height: 100vh;
     background: #fafafa;
     display: flex;
@@ -48,7 +72,7 @@ export default {
     justify-content: center;
 }
 
-.login-card {
+.register-card {
     background: #fff;
     border: 1px solid #dbdbdb;
     border-radius: 12px;
@@ -60,19 +84,19 @@ export default {
     align-items: center;
 }
 
-.login-logo {
+.register-logo {
     width: 180px;
     margin-bottom: 24px;
 }
 
-.login-title {
+.register-title {
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 24px;
     color: #262626;
 }
 
-.login-input {
+.register-input {
     width: 100%;
     padding: 0;
     padding: 10px 0;
@@ -85,12 +109,12 @@ export default {
     transition: border 0.2s;
 }
 
-.login-input:focus {
+.register-input:focus {
     border: 1.5px solid #a29bfe;
     background: #fff;
 }
 
-.login-btn {
+.register-btn {
     width: 100%;
     padding: 10px 0;
     background: linear-gradient(90deg, #fd5949 0%, #d6249f 100%);
@@ -104,25 +128,25 @@ export default {
     transition: background 0.2s;
 }
 
-.login-btn:hover {
+.register-btn:hover {
     background: linear-gradient(90deg, #d6249f 0%, #fd5949 100%);
 }
 
-.login-footer {
+.register-footer {
     font-size: 14px;
     color: #8e8e8e;
     margin-top: 10px;
     text-align: center;
 }
 
-.signup-link {
+.login-link {
     color: #0095f6;
     text-decoration: none;
     margin-left: 6px;
     font-weight: 500;
 }
 
-.signup-link:hover {
+.login-link:hover {
     text-decoration: underline;
 }
 </style>

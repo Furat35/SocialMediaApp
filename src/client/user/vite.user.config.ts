@@ -8,12 +8,12 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@user': fileURLToPath(new URL('./user', import.meta.url)),
-      '@shared': fileURLToPath(new URL('./src/shared', import.meta.url)),
+      '@user': fileURLToPath(new URL('.', import.meta.url)),
+      '@shared': fileURLToPath(new URL('../src/shared', import.meta.url)),
     },
   },
   build: {
-    outDir: '../dist/user',
+    outDir: './dist/user',
     emptyOutDir: true,
   },
 })

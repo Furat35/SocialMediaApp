@@ -1,11 +1,55 @@
-<script lang="ts">
-export default {
-}
-</script>
-
 <template>
   <RouterView />
+  <Loading :isBusy="isBusy" />
 </template>
+
+<script lang="ts">
+import Loading from '@shared/components/Loading.vue';
+export default {
+  components: {
+    Loading
+  },
+  data() {
+    return {
+      isBusy: false,
+      refreshTokenInterval: null as ReturnType<typeof setInterval> | null
+    }
+  },
+  mounted() {
+    this.$bus.on('isBusy', this.handleEvent);
+
+    // this.refreshTokenInterval = setInterval(() => {
+
+
+    //   this.$axios.post('/auth/refresh-token')
+    //     .then(response => {
+    //       if (response.data.isError) {
+    //         this.$bus.emit('isBusy', false);
+    //         this.$router.push({ name: 'login' });
+    //       } else {
+    //         this.$bus.emit('isBusy', false);
+    //       }
+    //     })
+    //     .catch(() => {
+    //       this.$bus.emit('isBusy', false);
+    //       this.$router.push({ name: 'login' });
+    //     });
+    // }, 5 * 1000);
+  },
+  beforeUnmount() {
+    this.$bus.off('isBusy');
+    if (this.refreshTokenInterval) {
+      clearInterval(this.refreshTokenInterval);
+      this.refreshTokenInterval = null;
+    }
+  },
+  methods: {
+    handleEvent(isBusy: boolean) {
+      this.isBusy = isBusy;
+    }
+  }
+}
+</script>
 
 <style scoped>
 header {

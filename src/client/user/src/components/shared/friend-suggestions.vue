@@ -44,7 +44,7 @@ export default {
 
 <style>
 .ig-suggestions {
-    padding: 24px 20px 16px 20px;
+    padding: 0px 20px 16px 20px;
     width: 100%;
     min-width: 240px;
     max-width: 320px;

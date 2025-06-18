@@ -6,8 +6,9 @@
         alt="Instagram" />
       <h2 class="login-title">Giriş Yap</h2>
       <form @submit.prevent="handleLogin">
-        <input v-model="username" type="text" class="login-input" placeholder="  Kullanıcı Adı" required />
-        <input v-model="password" type="password" class="login-input" placeholder="  Şifre" required />
+        <input v-model="loginModel.username" type="text" class="login-input px-2" placeholder="Kullanıcı Adı"
+          required />
+        <input v-model="loginModel.password" type="password" class="login-input px-2" placeholder="Şifre" required />
         <button type="submit" class="login-btn">Giriş Yap</button>
       </form>
       <div class="login-footer">
@@ -19,21 +20,40 @@
 </template>
 
 <script lang="ts">
+import { LoginRequestModel } from '@shared/models/auth-models/LoginRequestModel';
+import { toast } from '../helpers/toast';
+import { nextTick } from 'vue';
+import { LoginResponseModel } from '@shared/models/auth-models/LoginResponseModel';
+import { useUserStore } from '../helpers/store';
+
 export default {
   name: 'LoginView',
   data() {
     return {
-      username: '',
-      password: ''
+      loginModel: new LoginRequestModel(),
     }
   },
   methods: {
     handleLogin() {
-      // Here you would typically handle the login logic, e.g., API call
-      console.log('Logging in with:', this.username, this.password);
-      // Reset fields after login attempt
-      this.username = '';
-      this.password = '';
+      new LoginResponseModel({})
+      this.$bus.emit('isBusy', true);
+      this.$axios.post('/auth/login', this.loginModel)
+        .then((response) => {
+          if (response.data.data && !response.data.isError) {
+            toast.success("Giriş işlemi başarılı!");
+            useUserStore().setUserInfo(response.data.data as LoginResponseModel)
+            this.$router.push({ name: 'main-page' });
+          } else {
+            toast.error(response.data.errorMessages || 'Giriş başarısız.');
+          }
+          nextTick(() => {
+            this.$bus.emit('isBusy', false);
+          });
+        })
+        .catch(error => {
+          this.$bus.emit('isBusy', false);
+          toast.error(error.response?.data?.errorMessages || 'Giriş sırasında bir hata oluştu.');
+        });
     }
   },
 }

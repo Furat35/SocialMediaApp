@@ -14,9 +14,13 @@
         </div>
         <div class="ig-navbar-section ig-navbar-right">
           <!-- <button class="">Login</button> -->
-          <router-link :to="{ name: 'login' }" class="ig-login-btn ig-nav-link"><span
+          <router-link :to="{ name: 'login' }" class="ig-login-btn ig-nav-link" v-if="isAuthenticated"
+            @click="logout"><span class="material-icons">logout</span>
+            Logout</router-link>
+          <router-link :to="{ name: 'login' }" class="ig-login-btn ig-nav-link" v-else><span
               class="material-icons">login</span>
             Login</router-link>
+
         </div>
       </div>
     </nav>
@@ -26,51 +30,25 @@
 </template>
 
 <script lang="ts">
+import { useUserStore } from '../helpers/store';
+
 export default {
   name: 'InstagramClone',
-  data() {
-    return {
-      stories: [
-        { image: 'https://randomuser.me/api/portraits/women/1.jpg' },
-        { image: 'https://randomuser.me/api/portraits/men/2.jpg' },
-        { image: 'https://randomuser.me/api/portraits/women/3.jpg' },
-        { image: 'https://randomuser.me/api/portraits/men/4.jpg' },
-        { image: 'https://randomuser.me/api/portraits/women/5.jpg' }
-      ],
-      posts: [
-        {
-          username: 'jane_doe',
-          profile: 'https://randomuser.me/api/portraits/women/1.jpg',
-          image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
-          caption: 'Enjoying the view! 🌄',
-          time: '2 hours ago'
-        },
-        {
-          username: 'john_smith',
-          profile: 'https://randomuser.me/api/portraits/men/2.jpg',
-          image: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=800&q=80',
-          caption: 'Great vibes only.',
-          time: '3 hours ago'
-        }
-      ],
-      suggestedUsers: [
-        {
-          username: 'alex_92',
-          avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-          desc: 'New to Instagram'
-        },
-        {
-          username: 'sara_w',
-          avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-          desc: 'Suggested for you'
-        },
-        {
-          username: 'mike_theo',
-          avatar: 'https://randomuser.me/api/portraits/men/54.jpg',
-          desc: 'Popular'
-        }
-      ]
-    };
+  computed: {
+    userStore() {
+      return useUserStore();
+    },
+    isAuthenticated() {
+      return this.userStore.getIsAuthenticated;
+    }
+  },
+  methods: {
+    logout() {
+      console.log(this.isAuthenticated);
+      this.userStore.logout();
+      console.log(this.isAuthenticated);
+      this.$router.push({ name: 'login' });
+    }
   }
 }
 </script>

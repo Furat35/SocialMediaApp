@@ -51,6 +51,8 @@ export default {
         FriendSuggestions
     },
     name: 'InstagramClone',
+    created() {
+    },
     data() {
         return {
             stories: [

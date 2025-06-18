@@ -1,0 +1,15 @@
+﻿using Posts.Api.Core.Domain.Entities;
+
+namespace Posts.Api.Core.Application.Dtos.Posts
+{
+    public class PostListDto
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string Description { get; set; }
+        public string Location { get; set; }
+        public DateTime CreateDate { get; set; }
+        public ICollection<Like> Likes { get; set; }
+        public ICollection<Comment> Comments { get; set; }
+    }
+}

@@ -1,0 +1,74 @@
+version: '3.4'
+
+services:
+  consul_socialmedia:         
+     container_name: consul_socialmedia
+     ports:
+        - "8500:8500" 
+        - "8600:8600" 
+
+  sqlserver_socialmedia:
+    container_name: sqlserver_socialmedia
+    environment:
+        SA_PASSWORD: "Firat3521"
+        ACCEPT_EULA: "Y"
+    restart: always
+    ports:
+        - "8433:1433" 
+    volumes:
+        - ${APPDATA}/data:/var/opt/mssql/data
+        - ${APPDATA}/log:/var/opt/mssql/log
+        - ${APPDATA}/secrets:/var/opt/mssql/secrets
+    depends_on:
+        - consul_socialmedia
+
+  gateway.api:
+    container_name: gateway.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8000
+      - "GlobalConfiguration__BaseUrl=http://gateway.api:8000"
+      - "GlobalConfiguration__ServiceDiscoveryProvider__Host=consul_socialmedia"
+      - "GlobalConfiguration__ServiceDiscoveryProvider__Port=8500"
+      - "GlobalConfiguration__ServiceDiscoveryProvider__Type=Consul"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+        - consul_socialmedia
+
+  identityserver.api:
+    container_name: identityserver.api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8001
+      - ConnectionStrings__IdentityDb=Server=sqlserver_socialmedia,1433;Database=IdentityDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
+    ports:
+      - "8001:8001"
+    depends_on:
+        - consul_socialmedia
+        - sqlserver_socialmedia 
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+
+  posts.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8002
+      - ConnectionStrings__PostsDb=Server=sqlserver_socialmedia,1433;Database=PostsDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
+    ports:
+      - "8002:8002"
+    depends_on:
+        - consul_socialmedia
+        - sqlserver_socialmedia 
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

@@ -1,0 +1,8 @@
+// local
+Gateway.Api => 6000
+IdentityServer.Api => 6001
+
+
+// local
+Gateway.Api => 8000
+IdentityServer.Api => 8001
