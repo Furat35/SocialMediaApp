@@ -25,7 +25,9 @@
       </div>
     </nav>
 
-    <router-view></router-view>
+    <div class="ig-content">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
@@ -44,9 +46,7 @@ export default {
   },
   methods: {
     logout() {
-      console.log(this.isAuthenticated);
       this.userStore.logout();
-      console.log(this.isAuthenticated);
       this.$router.push({ name: 'login' });
     }
   }

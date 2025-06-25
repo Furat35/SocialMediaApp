@@ -13,6 +13,8 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostById
         public async Task<ResponseDto<PostListDto>> Handle(GetPostByIdQuery request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.Id);
+            if (post == null) return ResponseDto<PostListDto>.Fail("Post not found", HttpStatusCode.NotFound);
+
             var mappedPost = mapper.Map<PostListDto>(post);
 
             return ResponseDto<PostListDto>.Success(mappedPost, HttpStatusCode.OK);

@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import axios from './helpers/axios'
+import { axios } from './helpers/axios'
 import eventBus from './helpers/event-bus'
 import Toast, { PluginOptions } from 'vue-toastification'
 import 'vue-toastification/dist/index.css'

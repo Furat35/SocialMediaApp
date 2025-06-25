@@ -1,8 +1,11 @@
 // local
 Gateway.Api => 6000
 IdentityServer.Api => 6001
-
+Posts.Api => 6002
+SocialMediaApp.Aggregator => 6003
 
 // local
 Gateway.Api => 8000
 IdentityServer.Api => 8001
+Posts.Api => 8002
+SocialMediaApp.Aggregator => 8003

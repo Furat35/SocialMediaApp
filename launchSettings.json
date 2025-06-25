@@ -6,7 +6,8 @@
       "serviceActions": {
         "gateway.api": "StartDebugging",
         "identityserver.api": "StartDebugging",
-        "posts.api": "StartDebugging"
+        "posts.api": "StartDebugging",
+        "socialmediaapp.aggregator": "StartDebugging"
       }
     }
   }

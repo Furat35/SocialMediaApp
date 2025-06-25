@@ -45,6 +45,9 @@ namespace IdentityServer.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("ModifyDate")
                         .HasColumnType("datetime2");
 

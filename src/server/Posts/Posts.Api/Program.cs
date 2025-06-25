@@ -25,9 +25,8 @@ var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 
 app.AddConsulConfig(lifetime, builder.Configuration);
 
-app.UseHttpsRedirection();
-
-//app.UseAuthorization();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

@@ -1,7 +1,9 @@
 ﻿using BuildingBlocks.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Repositories;
+using Posts.Api.Core.Application.Services;
 using Posts.Api.Infrastructure.Repositories;
+using Posts.Api.Infrastructure.Services;
 using System.Reflection;
 
 namespace Posts.Api.Extensions
@@ -16,7 +18,12 @@ namespace Posts.Api.Extensions
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddAutoMapper(typeof(Program).Assembly);
             services.AddHealthChecks();
+            services.AddHttpContextAccessor();
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<IFriendRepository, FriendRepository>();
+            services.AddScoped<IImageService, ImageService>();
+            services.ConfigureAuthentication(configuration);
+
         }
     }
 }

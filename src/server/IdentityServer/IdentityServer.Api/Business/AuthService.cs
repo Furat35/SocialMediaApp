@@ -115,7 +115,7 @@ namespace IdentityServer.Api.Business
                 ValidateIssuer = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtConfig:SecretKey"])),
-                ValidateLifetime = false
+                ValidateLifetime = true
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

@@ -31,6 +31,8 @@ services:
       - "GlobalConfiguration__ServiceDiscoveryProvider__Host=consul_socialmedia"
       - "GlobalConfiguration__ServiceDiscoveryProvider__Port=8500"
       - "GlobalConfiguration__ServiceDiscoveryProvider__Type=Consul"
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
     ports:
       - "8000:8000"
     volumes:
@@ -69,6 +71,20 @@ services:
     depends_on:
         - consul_socialmedia
         - sqlserver_socialmedia 
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  socialmediaapp.aggregator:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8003
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
+    ports:
+      - "8003:8003"
+    depends_on:
+        - consul_socialmedia
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

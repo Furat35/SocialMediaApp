@@ -26,3 +26,10 @@ services:
       context: .
       dockerfile: src/server/Posts/Posts.Api/Dockerfile
 
+
+  socialmediaapp.aggregator:
+    image: ${DOCKER_REGISTRY-}socialmediaappaggregator
+    build:
+      context: .
+      dockerfile: src/server/Gateway/SocialMediaApp.Aggregator/Dockerfile
+

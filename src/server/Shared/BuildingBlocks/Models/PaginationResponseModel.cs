@@ -1,8 +1,8 @@
 ﻿namespace BuildingBlocks.Models
 {
-    public class PaginationResponseModel<TResponse>(int page, int pageSize, int pageCount, TResponse data)
+    public class PaginationResponseModel<TResponse>(int page, int pageSize, int pageCount, List<TResponse>? data)
     {
-        public TResponse? Data => data;
+        public List<TResponse>? Data => data;
         public int Page => page;
         public int PageSize => pageSize;
         public int PageCount => pageCount;

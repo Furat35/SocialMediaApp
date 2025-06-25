@@ -17,4 +17,9 @@
 	<PackageReference Include="Ocelot.Provider.Consul" Version="17.0.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\BuildingBlocks\BuildingBlocks.csproj" />
+  </ItemGroup>
+
 </Project>

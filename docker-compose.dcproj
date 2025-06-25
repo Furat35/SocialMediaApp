@@ -5,6 +5,7 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
     <ProjectGuid>359ff391-9b11-4455-a7ad-9e0fd455a17f</ProjectGuid>
+    <DockerServiceName>socialmediaapp.aggregator</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.override.yml">

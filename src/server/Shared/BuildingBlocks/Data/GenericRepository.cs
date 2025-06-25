@@ -83,6 +83,12 @@ namespace BuildingBlocks.Data
             return entity;
         }
 
+        public virtual TEntity Remove(TEntity entity)
+        {
+            dbContext.Set<TEntity>().Remove(entity);
+            return entity;
+        }
+
         public virtual int SaveChanges()
         {
             return dbContext.SaveChanges();

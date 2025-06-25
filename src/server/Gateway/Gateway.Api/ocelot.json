@@ -5,12 +5,63 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/feeds",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/feeds",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/feeds/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/feeds/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      },
+      "AddHeadersToDownstream": {
+        "Authorization": "Bearer {Token}"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
       "ServiceName": "identityserver.api",
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/auth/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+      "AddHeadersToDownstream": {
+        "Authorization": "Bearer {Token}"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "identityserver.api",
+      "DownstreamPathTemplate": "/api/users/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/users/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AddHeadersToDownstream": {
+        "Authorization": "Bearer {Token}"
+      }
     },
     {
       "LoadBalancerOptions": {
@@ -22,7 +73,10 @@
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/posts",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     },
     {
       "LoadBalancerOptions": {
@@ -34,7 +88,40 @@
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/posts/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
-      "UpstreamScheme": "http"
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "posts.api",
+      "DownstreamPathTemplate": "/api/friends/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/friends/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "posts.api",
+      "DownstreamPathTemplate": "/api/friends",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/friends",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
     }
   ],
   "GlobalConfiguration": {

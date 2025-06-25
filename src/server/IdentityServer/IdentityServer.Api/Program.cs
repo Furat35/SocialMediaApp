@@ -11,10 +11,13 @@ builder.Services
     .ConfigureConsul(builder.Configuration);
 
 builder.Services.AddHealthChecks();
+builder.Services.ConfigureAuthentication(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 try
 {

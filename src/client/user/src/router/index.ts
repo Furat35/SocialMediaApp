@@ -6,6 +6,8 @@ import MessageComponent from '../components/home/message.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ExploreComponent from '../components/home/explore.vue'
+import ProfileComponent from '../components/home/profile.vue'
+
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -33,6 +35,11 @@ const router = createRouter({
           name: 'explore',
           path: '/explore',
           component: ExploreComponent,
+        },
+        {
+          name: 'profile',
+          path: '/profile',
+          component: ProfileComponent,
         },
       ],
     },
