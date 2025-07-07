@@ -48,7 +48,8 @@
                         <div class="text-muted small mt-1">{{ post.createDate.toLocaleDateString('en-En') }}</div>
                     </div>
                 </div>
-                <div v-show="!hasMore" class="mb-4" style="text-align: center">Couldn't find anymore psots...
+                <div v-show="!postScrollModel.hasMore" class="mb-4" style="text-align: center">Couldn't find anymore
+                    psots...
                 </div>
             </div>
             <div v-if="showCommentsModal" class="comments-modal-backdrop" @click.self="closeCommentsModal">
@@ -101,26 +102,27 @@
                 </div>
             </div>
         </main>
-        <FriendSuggestions></FriendSuggestions>
+        <FollowerSuggestions></FollowerSuggestions>
     </div>
 
 </template>
 
 <script lang="ts">
 import LeftSidebar from '../shared/left-sidebar.vue';
-import FriendSuggestions from '../shared/friend-suggestions.vue';
+import FollowerSuggestions from '../shared/follower-suggestions.vue';
 import { PostListDto } from '@user/src/models/posts/PostListDto';
 import { PaginationModel } from '@shared/models/PaginationModel';
-import { FriendListModel } from '@shared/models/friends/FriendListModel';
+import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
 import { useUserStore } from '@user/src/helpers/store';
 import { PostLikeListDto } from '@user/src/models/posts/PostLikeListDto';
 import { PostCommentListDto } from '@user/src/models/posts/PostCommentListDto';
 import { UserListDto } from '@shared/models/users/UserListDto';
+import { ScrollModel } from '@shared/models/ScrollModel';
 
 export default {
     components: {
         LeftSidebar,
-        FriendSuggestions
+        FollowerSuggestions
     },
     name: 'InstagramClone',
     created() {
@@ -136,10 +138,8 @@ export default {
                 { image: 'https://randomuser.me/api/portraits/women/5.jpg' }
             ],
             posts: [] as PostListDto[],
-            friends: new PaginationModel<FriendListModel>(),
-            currentPage: 1,
-            isLoading: false,
-            hasMore: true,
+            followers: new PaginationModel<FollowerListModel>(),
+            postScrollModel: new ScrollModel(),
             userId: useUserStore().getUserId,
             showCommentsModal: false,
             showLikesModal: false,
@@ -162,15 +162,18 @@ export default {
             const scrollBottom = window.innerHeight + window.scrollY;
             const threshold = document.body.offsetHeight - 600;
 
-            if (scrollBottom >= threshold && this.hasMore) {
+            if (scrollBottom >= threshold && this.postScrollModel.hasMore) {
                 this.getPosts();
             }
         },
         async addComment() {
             if (!this.newComment.trim() || !this.selectedPost) return;
             var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
-            if (!response.data.data.isError) {
-                this.selectedPost.comments.push(new PostCommentListDto({ postId: this.selectedPost.id, userComment: this.newComment, username: useUserStore().getUsername }))
+            if (!response.data.isError) {
+                this.selectedPost.comments.push(new PostCommentListDto({
+                    postId: this.selectedPost.id,
+                    userComment: this.newComment, createDate: new Date(), user: new UserListDto({ username: useUserStore().getUsername, id: useUserStore().getUserId })
+                }))
             }
             this.newComment = '';
         },
@@ -196,44 +199,40 @@ export default {
                 return;
             }
             var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
-            if (!response.data.data.isError) {
-
-                var like = new PostLikeListDto({ user: new UserListDto(), postId: post.id });
+            if (!response.data.isError) {
+                var like = new PostLikeListDto({ user: new UserListDto({ id: this.userId }), postId: post.id });
                 post.likes.push(like)
             }
         },
         async removeLike(post: PostListDto) {
             var response = await this.$axios.post(`/posts/unlike?postId=${post.id}`)
-            if (!response.data.data.isError)
+            if (!response.data.isError)
                 post.likes = post.likes.filter(_ => _.user.id != this.userId)
         },
         async getPosts() {
-            if (this.isLoading) return;
-            this.isLoading = true;
+            if (this.postScrollModel.isLoading) return;
+            this.postScrollModel.isLoading = true;
 
             try {
-                var response = await this.$axios.get(`/aggregated/feeds?page=${this.currentPage}&pageSize=5`)
+                var response = await this.$axios.get(`/aggregated/feeds?page=${this.postScrollModel.currentPage}&pageSize=5`)
 
-                if (response.data.data && !response.data.data.isError) {
-                    const rawPosts = response.data.data.data as PostListDto[];
+                if (response.data.data) {
+                    const rawPosts = response.data.data as PostListDto[];
                     const newPosts = rawPosts.map(p => new PostListDto(p))
                     await this.setPostImages(newPosts);
                     this.posts.push(...newPosts);
 
-                    // Update pagination
-                    if (!response.data.data.hasNext) {
-                        this.hasMore = false;
+                    if (!response.data.hasNext) {
+                        this.postScrollModel.hasMore = false;
                     } else {
-                        this.currentPage++;
+                        this.postScrollModel.currentPage++;
                     }
 
-                } else {
-                    console.error('Error fetching posts:', response.data.errorMessages);
                 }
             } catch (error) {
                 console.error('Error fetching posts:', error);
             } finally {
-                this.isLoading = false;
+                this.postScrollModel.isLoading = false;
             }
         },
         async setPostImages(postsToUpdate: PostListDto[]) {

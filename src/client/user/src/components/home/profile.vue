@@ -18,8 +18,8 @@
           </div>
           <div class="profile-stats">
             <span><strong>{{ totalPosts }}</strong> posts</span>
-            <span style="cursor: pointer" @click="openFriendsModal"><strong>{{ totalFriends }}</strong>
-              friends</span>
+            <span style="cursor: pointer" @click="openFollowersModal"><strong>{{ totalFollowers }}</strong>
+              followers</span>
           </div>
           <div class="profile-bio">{{ user.bio }} </div>
         </div>
@@ -86,21 +86,21 @@
           </div>
         </div>
       </div>
-      <!-- Friends Modal -->
-      <div v-if="showFriendsModal" class="friends-modal-backdrop" @click.self="closeFriendsModal">
-        <div class="friends-modal">
-          <button class="close-modal-btn" @click="closeFriendsModal" aria-label="Close">&times;</button>
-          <div class="friends-panel">
-            <div class="friends-list" ref="friendsList" @scroll="handleFriendsScroll">
+      <!-- Followers Modal -->
+      <div v-if="showFollowersModal" class="followers-modal-backdrop" @click.self="closeFollowersModal">
+        <div class="followers-modal">
+          <button class="close-modal-btn" @click="closeFollowersModal" aria-label="Close">&times;</button>
+          <div class="followers-panel">
+            <div class="followers-list" ref="followersList" @scroll="handleFollowersScroll">
               <div class="mb-3">
-                <strong>{{ totalFriends }} Friends</strong>
+                <strong>{{ totalFollowers }} Followers</strong>
               </div>
               <hr>
-              <div v-for="friend in friends" :key="friend.userId" class="like mb-2">
-                <div @click="goToProfile(friend.userId)" style="cursor: pointer;">
-                  <img :src="`${gatewayUrl}users/image?userId=${friend.userId}`" class="me-2"
+              <div v-for="follower in followers" :key="follower.user.id" class="like mb-2">
+                <div @click="goToProfile(follower.user.id)" style="cursor: pointer;">
+                  <img :src="`${gatewayUrl}users/image?userId=${follower.user.id}`" class="me-2"
                     style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                  <strong>{{ friend.user.fullname }}</strong>
+                  <strong>{{ follower.user.fullname }}</strong>
                 </div>
               </div>
             </div>
@@ -114,11 +114,12 @@
 <script lang="ts">
 import LeftSidebar from '../shared/left-sidebar.vue';
 import { PostListDto } from '@user/src/models/posts/PostListDto';
-import { FriendListModel } from '@shared/models/friends/FriendListModel';
+import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
 import { useUserStore } from '@user/src/helpers/store';
 import { PostLikeListDto } from '@user/src/models/posts/PostLikeListDto';
 import { PostCommentListDto } from '@user/src/models/posts/PostCommentListDto';
 import { UserListDto } from '@shared/models/users/UserListDto';
+import { ScrollModel } from '@shared/models/ScrollModel';
 
 export default {
   components: { LeftSidebar },
@@ -126,25 +127,21 @@ export default {
   async created() {
     this.getPosts()
     this.getUserInfo()
-    this.getUserFriends()
+    this.getUserFollowers()
   },
   data() {
     return {
       totalPosts: 0,
-      totalFriends: 0,
+      totalFollowers: 0,
       posts: [] as PostListDto[],
-      friends: [] as FriendListModel[],
+      followers: [] as FollowerListModel[],
       user: new UserListDto(),
-      currentPage: 1,
-      isLoading: false,
-      hasMore: true,
-      friendsCurrentPage: 1,
-      friendsIsLoading: false,
-      friendsHasMore: true,
+      postsScrollModel: new ScrollModel(),
+      followerScrollModel: new ScrollModel(),
       userId: parseInt(this.$route.query.userId as string),
       showCommentsModal: false,
       showLikesModal: false,
-      showFriendsModal: false,
+      showFollowersModal: false,
       selectedPost: null as PostListDto | null,
       newComment: '',
       gatewayUrl: import.meta.env.VITE_GatewayUrl,
@@ -160,29 +157,25 @@ export default {
   computed: {
     showSettings() {
       return useUserStore().getUserId === this.userId;
-    }
+    },
   },
   watch: {
     "$route.query.userId"(newVal, oldVal) {
       if (newVal !== oldVal) {
-        this.currentPage = 1
-        this.isLoading = false
-        this.hasMore = true
-        this.friendsCurrentPage = 1
-        this.friendsIsLoading = false
-        this.friendsHasMore = true
-        this.userId = newVal
+        Object.assign(this.postsScrollModel, new ScrollModel())
+        Object.assign(this.followerScrollModel, new ScrollModel())
+        this.userId = parseInt(newVal)
         this.posts = []
-        this.friends = []
+        this.followers = []
         this.getUserInfo()
-        this.getUserFriends()
+        this.getUserFollowers()
         this.getPosts()
         if (this.showCommentsModal)
           this.closeCommentsModal()
         if (this.showLikesModal)
           this.closeLikesModal()
-        if (this.showFriendsModal)
-          this.closeFriendsModal()
+        if (this.showFollowersModal)
+          this.closeFollowersModal()
       }
     }
   },
@@ -190,67 +183,60 @@ export default {
     handleScroll() {
       const scrollBottom = window.innerHeight + window.scrollY
       const threshold = document.body.offsetHeight - 600
-
-      if (scrollBottom >= threshold && this.hasMore && !this.isLoading)
+      if (scrollBottom >= threshold && this.postsScrollModel.hasMore && !this.postsScrollModel.isLoading)
         this.getPosts()
     },
     goToProfile(newUserId: number) {
       if (newUserId !== this.userId)
         this.$router.push({ name: 'profile', query: { userId: newUserId } });
     },
-    handleFriendsScroll() {
-      const el = this.$refs.friendsList as HTMLElement;
+    handleFollowersScroll() {
+      const el = this.$refs.followersList as HTMLElement;
       if (!el) return;
       const threshold = 200;
-      console.log(el.scrollTop)
-      console.log(el.clientHeight)
-      console.log(el.scrollHeight)
-      console.log(el)
-      if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold && this.friendsHasMore && !this.friendsIsLoading) {
-        this.getUserFriends();
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold && this.followerScrollModel.hasMore && !this.followerScrollModel.isLoading) {
+        this.getUserFollowers();
       }
     },
+
     async getUserInfo() {
       var response = await this.$axios.get(`/users/${this.userId}`)
       Object.assign(this.user, response.data.data);
     },
-    async getUserFriends() {
-      if (this.friendsIsLoading) return;
-      this.friendsIsLoading = true;
+    async getUserFollowers() {
+      if (this.followerScrollModel.isLoading) return;
+      this.followerScrollModel.isLoading = true;
       try {
-        var response = await this.$axios.get(`/aggregated/friends/byUser?userId=${this.userId}&page=${this.friendsCurrentPage}&pageSize=30`)
-        if (response.data.data && !response.data.data.isError) {
-          const newFriends = response.data.data.data.map(f => new FriendListModel(f))
-          this.totalFriends = response.data.data.totalEntities
-          this.friends.push(...newFriends);
-          if (!response.data.data.hasNext) this.friendsHasMore = false;
-          else this.friendsCurrentPage++;
+        var response = await this.$axios.get(`/aggregated/followers/byUser?userId=${this.userId}&page=${this.followerScrollModel.currentPage}&pageSize=30`)
+        if (response.data.data) {
+          const newFollowers = response.data.data.map(f => new FollowerListModel(f))
+          this.totalFollowers = response.data.totalEntities
+          this.followers.push(...newFollowers)
+          if (!response.data.hasNext) this.followerScrollModel.hasMore = false;
+          else this.followerScrollModel.currentPage++;
         }
       }
       finally {
-        this.friendsIsLoading = false;
+        this.followerScrollModel.isLoading = false;
       }
-
     },
     async getPosts() {
-      if (this.isLoading) return;
-      this.isLoading = true;
+      if (this.postsScrollModel.isLoading) return;
+      this.postsScrollModel.isLoading = true;
       try {
-        var response = await this.$axios.get(`/aggregated/feeds/${this.userId}?page=${this.currentPage}&pageSize=18`)
-        if (response.data.data && !response.data.data.isError) {
-          this.totalPosts = response.data.data.totalEntities
-          const newPosts = response.data.data.data.map(p => new PostListDto(p))
+        var response = await this.$axios.get(`/aggregated/feeds/${this.userId}?page=${this.postsScrollModel.currentPage}&pageSize=18`)
+        if (response.data.data) {
+          this.totalPosts = response.data.totalEntities
+          const newPosts = response.data.data.map(p => new PostListDto(p))
           await this.setPostImages(newPosts);
           this.posts.push(...newPosts);
-          if (!response.data.data.hasNext) this.hasMore = false;
-          else this.currentPage++;
+          if (!response.data.hasNext) this.postsScrollModel.hasMore = false;
+          else this.postsScrollModel.currentPage++;
         }
-        else
-          console.error('Error fetching posts:', response.data.errorMessages);
       } catch (error) {
         console.error('Error fetching posts:', error);
       } finally {
-        this.isLoading = false;
+        this.postsScrollModel.isLoading = false;
       }
     },
     async setPostImages(postsToUpdate: PostListDto[]) {
@@ -264,7 +250,7 @@ export default {
     async addComment() {
       if (!this.newComment.trim() || !this.selectedPost) return;
       var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
-      if (!response.data.data.isError) {
+      if (!response.data.isError) {
         this.selectedPost.comments.push(new PostCommentListDto({ postId: this.selectedPost.id, userComment: this.newComment, user: new UserListDto({ id: useUserStore().getUserId, username: useUserStore().getUsername }), createDate: new Date() }))
       }
       this.newComment = '';
@@ -276,7 +262,7 @@ export default {
         return;
       }
       var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
-      if (!response.data.data.isError) {
+      if (!response.data.isError) {
         var like = new PostLikeListDto({ user: new UserListDto({ id: currentUserId, username: useUserStore().getUsername }), postId: post.id });
         post.likes.push(like)
       }
@@ -284,14 +270,14 @@ export default {
     async removeLike(post: PostListDto) {
       var currentUserId = useUserStore().getUserId;
       var response = await this.$axios.post(`/posts/unlike?postId=${post.id}`)
-      if (!response.data.data.isError)
+      if (!response.data.isError)
         post.likes = post.likes.filter(_ => _.user.id != currentUserId)
     },
-    openFriendsModal() {
-      this.showFriendsModal = true;
+    openFollowersModal() {
+      this.showFollowersModal = true;
     },
-    closeFriendsModal() {
-      this.showFriendsModal = false;
+    closeFollowersModal() {
+      this.showFollowersModal = false;
     },
     openCommentsModal(post: PostListDto) {
       this.selectedPost = post;
@@ -315,7 +301,7 @@ export default {
 </script>
 
 <style>
-.friends-list {
+.follower-list {
   max-height: 400px;
   overflow-y: auto;
 }

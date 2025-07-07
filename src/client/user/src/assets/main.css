@@ -13,6 +13,39 @@ body {
   box-sizing: border-box;
 }
 
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: auto;
+  right: auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 350px;
+}
+
+.search-dropdown-item {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.search-dropdown-empty {
+  padding: 10px 16px;
+  color: #888;
+}
+
 .ig-bg {
   min-height: calc(100vh - 40px);
   background-color: #fafafa;
@@ -58,6 +91,7 @@ body {
   flex: 2;
   justify-content: center;
   display: flex;
+  position: relative;
 }
 
 .ig-navbar-right {
@@ -546,7 +580,7 @@ body {
   color: #c13584;
 }
 
-.friends-modal-backdrop {
+.followers-modal-backdrop {
   position: fixed;
   top: 0;
   left: 0;
@@ -560,7 +594,7 @@ body {
   z-index: 1000;
 }
 
-.friends-modal {
+.followers-modal {
   background: #fff;
   border-radius: 8px;
   width: 30vw;
@@ -571,7 +605,7 @@ body {
   position: relative;
 }
 
-.friends-panel {
+.followers-panel {
   flex: 1 1 50%;
   padding: 2rem 1rem 2rem 2rem;
   min-width: 0;
@@ -581,7 +615,7 @@ body {
   flex-direction: column;
 }
 
-.friends-list {
+.followers-list {
   flex: 1 1 auto;
   overflow-y: auto;
   margin-bottom: 1rem;

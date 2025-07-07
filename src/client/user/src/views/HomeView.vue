@@ -11,12 +11,22 @@
 
         </div>
         <div class="ig-navbar-section ig-navbar-center">
-          <input class="form-control ig-search" type="search" placeholder="Search" aria-label="Search" />
+          <input class="form-control ig-search" type="search" placeholder="Search" aria-label="Search"
+            v-model="searchQuery" @focus="onFocus" @input="onSearch" @blur="onBlur" autocomplete="off" />
+          <ul v-if="showDropdown && searchResults.length" class="search-dropdown">
+            <li v-for="user in searchResults" :key="user.id" class="search-dropdown-item">
+              {{ user.username }}
+            </li>
+          </ul>
+          <div v-if="showDropdown && !searchResults.length && searchQuery"
+            class="search-dropdown search-dropdown-empty">
+            No users found.
+          </div>
         </div>
         <div class="ig-navbar-section ig-navbar-right">
-          <router-link :to="{ name: 'friend-requests' }" class="ig-login-btn ig-nav-link"><span
+          <router-link :to="{ name: 'follower-requests' }" class="ig-login-btn ig-nav-link"><span
               class="material-icons">group</span>
-            Friend Requests</router-link>
+            Follow Requests</router-link>
 
         </div>
       </div>
@@ -39,6 +49,44 @@ export default {
     },
     isAuthenticated() {
       return this.userStore.getIsAuthenticated;
+    }
+  },
+  data() {
+    return {
+      searchQuery: "",
+      searchResults: [],
+      showDropdown: false
+    }
+  },
+  methods: {
+    closeModal() {
+      this.showModal.value = false;
+      this.searchQuery.value = '';
+      this.searchResults.value = [];
+    },
+    async onSearch() {
+      if (this.searchQuery) {
+        // Replace this with your actual API call
+        this.searchResults = [
+          { id: 1, username: 'alice' },
+          { id: 2, username: 'bob' },
+          { id: 3, username: 'charlie' }
+        ].filter(u => u.username.includes(this.searchQuery.toLowerCase()));
+        this.showDropdown = true;
+      } else {
+        this.searchResults = [];
+        this.showDropdown = false;
+      }
+    },
+    onFocus() {
+      if (this.searchResults.length) {
+        this.showDropdown = true;
+      }
+    },
+    onBlur() {
+      setTimeout(() => {
+        this.showDropdown = false;
+      }, 150);
     }
   }
 }

@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using BuildingBlocks.Extensions;
+﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
 using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Business.Interfaces;
@@ -12,8 +11,8 @@ using System.Net;
 
 namespace IdentityServer.Api.Business
 {
-    public class UserService(IdentityDbContext context, IHttpContextAccessor httpContext, 
-        IServiceProvider serviceProvider, IFileService fileService) 
+    public class UserService(IdentityDbContext context, IHttpContextAccessor httpContext,
+        IServiceProvider serviceProvider, IFileService fileService)
         : UserRepository(context), IUserService
     {
         public readonly Lazy<IAuthService> _authService = new Lazy<IAuthService>(() => serviceProvider.GetRequiredService<IAuthService>());
@@ -25,7 +24,7 @@ namespace IdentityServer.Api.Business
 
         public async Task<ResponseDto<List<AppUser>>> GetUsersById(List<int> userIds)
         {
-            var users = await Get(_ => userIds.Contains( _.Id)).ToListAsync();
+            var users = await Get(_ => userIds.Contains(_.Id)).ToListAsync();
             return ResponseDto<List<AppUser>>.Success(users, HttpStatusCode.OK);
         }
 
@@ -50,13 +49,13 @@ namespace IdentityServer.Api.Business
             try
             {
                 var file = updateDto.ProfileImage;
-                if(file is not null)
+                if (file is not null)
                 {
                     path = await fileService.SaveFileAsync(file, $"images/users/profile/{httpContext.GetUserId().ToString()}");
                     user.ProfileImage = path;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 fileService.RemoveFile(path);
                 return ResponseDto<bool>.Fail(ex.Message, HttpStatusCode.InternalServerError);

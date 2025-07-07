@@ -38,7 +38,6 @@ export default {
       this.$bus.emit('isBusy', true);
       this.$axios.post('/auth/login', this.loginModel)
         .then((response) => {
-          console.log(response.data)
           if (response.data.data && !response.data.isError) {
             toast.success("Login succeded");
             useUserStore().setUserInfo(response.data.data as LoginResponseModel)
@@ -51,7 +50,6 @@ export default {
           });
         })
         .catch(error => {
-          console.log(error.data)
           this.$bus.emit('isBusy', false);
           toast.error(error.response?.data?.errorMessages[0] || 'Error occured during login');
         });

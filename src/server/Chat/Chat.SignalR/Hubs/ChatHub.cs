@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Chat.SignalR.Data.Contexts;
+using Chat.SignalR.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
-using Chat.SignalR.Models;
-using Chat.SignalR.Data.Contexts;
 
 namespace Chat.SignalR.Hubs
 {

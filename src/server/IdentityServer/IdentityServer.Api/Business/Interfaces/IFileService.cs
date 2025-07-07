@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace IdentityServer.Api.Business.Interfaces
+﻿namespace IdentityServer.Api.Business.Interfaces
 {
     public interface IFileService
     {

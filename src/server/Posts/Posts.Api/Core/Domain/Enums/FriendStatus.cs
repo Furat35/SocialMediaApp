@@ -1,6 +1,6 @@
 ﻿namespace Posts.Api.Core.Domain.Enums
 {
-    public enum FriendStatus
+    public enum FollowStatus
     {
         Pending,
         Accepted,

@@ -1,12 +1,10 @@
-using Chat.SignalR.Hubs;
 using BuildingBlocks.Extensions;
+using Chat.SignalR.Data.Contexts;
+using Chat.SignalR.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Chat.SignalR.Data.Contexts;
-using Consul;
-using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +13,7 @@ builder.Services.ConfigureConsul(builder.Configuration);
 builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSignalR();
-builder.Services.AddCors( options =>
+builder.Services.AddCors(options =>
 {
     options.AddPolicy("default", policy =>
     {

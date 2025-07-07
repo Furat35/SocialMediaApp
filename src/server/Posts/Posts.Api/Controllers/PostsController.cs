@@ -2,7 +2,7 @@ using BuildingBlocks.Controllers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Posts.Api.Core.Application.Features.Friends.GetFollowerPosts;
+using Posts.Api.Core.Application.Features.Followers.GetFollowerPosts;
 using Posts.Api.Core.Application.Features.Posts.CreatePost;
 using Posts.Api.Core.Application.Features.Posts.CreatePostComment;
 using Posts.Api.Core.Application.Features.Posts.DeletePost;
@@ -30,14 +30,14 @@ namespace Posts.Api.Controllers
         public async Task<IActionResult> GetPostsByUserId([FromQuery] GetPostsByUserIdQuery request)
         {
             var response = await mediatr.Send(request);
-            return CreateActionResult(response);
+            return Ok(response);
         }
 
         [HttpGet("follower-posts")]
         public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowerPostsQuery request)
         {
             var response = await mediatr.Send(request);
-            return CreateActionResult(response);
+            return Ok(response);
         }
 
         [HttpGet("image")]

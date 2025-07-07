@@ -1,9 +1,7 @@
 ﻿using BuildingBlocks.Models;
-using Consul.Filtering;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Interfaces;
 using IdentityServer.Api.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;

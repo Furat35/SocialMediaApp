@@ -56,7 +56,7 @@ namespace Posts.Api.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Posts.Api.Core.Domain.Entities.Friend", b =>
+            modelBuilder.Entity("Posts.Api.Core.Domain.Entities.Follower", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -81,7 +81,7 @@ namespace Posts.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Friends");
+                    b.ToTable("Followers");
                 });
 
             modelBuilder.Entity("Posts.Api.Core.Domain.Entities.Like", b =>

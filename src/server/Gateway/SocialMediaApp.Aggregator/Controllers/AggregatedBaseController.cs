@@ -1,5 +1,4 @@
 ﻿using BuildingBlocks.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SocialMediaApp.Aggregator.Controllers

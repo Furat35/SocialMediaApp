@@ -4,14 +4,13 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Posts;
 using Posts.Api.Core.Application.Repositories;
-using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
 {
     public class GetPostsByUserIdQueryHandler(IPostRepository postRepository, IMapper mapper)
-        : IRequestHandler<GetPostsByUserIdQuery, ResponseDto<PaginationResponseModel<PostListDto>>>
+        : IRequestHandler<GetPostsByUserIdQuery, PaginationResponseModel<PostListDto>>
     {
-        public async Task<ResponseDto<PaginationResponseModel<PostListDto>>> Handle(GetPostsByUserIdQuery request, CancellationToken cancellationToken)
+        public async Task<PaginationResponseModel<PostListDto>> Handle(GetPostsByUserIdQuery request, CancellationToken cancellationToken)
         {
             var userPosts = postRepository
                 .Get(_ => _.UserId == request.UserId && _.IsValid, includes: [i => i.Likes, i => i.Comments]);
@@ -25,9 +24,7 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
                 .ToListAsync(cancellationToken);
 
             var mappedData = mapper.Map<List<PostListDto>>(response);
-            var paginationModel = new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts, mappedData);
-
-            return ResponseDto<PaginationResponseModel<PostListDto>>.Success(paginationModel, HttpStatusCode.OK);
+            return new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts, mappedData);
         }
     }
 }

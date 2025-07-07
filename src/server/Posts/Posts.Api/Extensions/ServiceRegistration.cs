@@ -20,7 +20,7 @@ namespace Posts.Api.Extensions
             services.AddHealthChecks();
             services.AddHttpContextAccessor();
             services.AddScoped<IPostRepository, PostRepository>();
-            services.AddScoped<IFriendRepository, FriendRepository>();
+            services.AddScoped<IFollowerRepository, FollowerRepository>();
             services.AddScoped<IImageService, ImageService>();
             services.ConfigureAuthentication(configuration);
 

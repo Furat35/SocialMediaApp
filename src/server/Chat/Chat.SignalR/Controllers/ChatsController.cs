@@ -1,12 +1,9 @@
-﻿using Chat.SignalR.Data.Contexts;
-using Microsoft.AspNetCore.Mvc;
-using BuildingBlocks.Extensions;
+﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
-using Azure.Core;
-using System.Net;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
+using Chat.SignalR.Data.Contexts;
 using Chat.SignalR.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Chat.SignalR.Controllers
 {
@@ -20,7 +17,7 @@ namespace Chat.SignalR.Controllers
             var messages = context.Messages
                 .Where(_ => (_.From == httpContextAccessor.GetUserId() && _.To == userId) || (_.To == httpContextAccessor.GetUserId() && _.From == userId));
 
-            var totalMessages= await messages.CountAsync();
+            var totalMessages = await messages.CountAsync();
             var pageCount = totalMessages / request.PageSize + (totalMessages % request.PageSize > 0 ? 1 : 0);
             var response = await messages
                 .OrderBy(_ => _.SentDate)

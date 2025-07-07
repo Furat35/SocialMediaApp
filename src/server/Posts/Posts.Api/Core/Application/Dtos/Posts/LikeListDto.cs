@@ -1,6 +1,4 @@
-﻿using Posts.Api.Core.Domain.Entities;
-
-namespace Posts.Api.Core.Application.Dtos.Posts
+﻿namespace Posts.Api.Core.Application.Dtos.Posts
 {
     public class LikeListDto
     {
