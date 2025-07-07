@@ -9,3 +9,4 @@ Gateway.Api => 8000
 IdentityServer.Api => 8001
 Posts.Api => 8002
 SocialMediaApp.Aggregator => 8003
+Chat.SignalR => 8004

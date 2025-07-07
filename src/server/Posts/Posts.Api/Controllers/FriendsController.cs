@@ -3,7 +3,10 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Posts.Api.Core.Application.Features.Friends.AcceptFollowRequest;
+using Posts.Api.Core.Application.Features.Friends.DeclineFollow;
 using Posts.Api.Core.Application.Features.Friends.GetFollowerPosts;
+using Posts.Api.Core.Application.Features.Friends.GetFollowersByUserId;
+using Posts.Api.Core.Application.Features.Friends.GetFollowRequests;
 using Posts.Api.Core.Application.Features.Friends.RemoveFollowRequest;
 using Posts.Api.Core.Application.Features.Friends.SendFollowRequestFriend;
 
@@ -12,12 +15,12 @@ namespace Posts.Api.Controllers
     [Authorize]
     public class FriendsController(IMediator mediator) : BaseController
     {
-        //[HttpGet]
-        //public async Task<IActionResult> GetFollowersByUserId([FromQuery] GetFollowersByUserIdCommand request)
-        //{
-        //    var response = await mediator.Send(request);
-        //    return CreateActionResult(response);
-        //}
+        [HttpGet("byUser")]
+        public async Task<IActionResult> GetFollowersByUserId([FromQuery] GetFollowersByUserIdQuery request)
+        {
+            var response = await mediator.Send(request);
+            return CreateActionResult(response);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowerPostsQuery request)
@@ -25,6 +28,15 @@ namespace Posts.Api.Controllers
             var response = await mediator.Send(request);
             return CreateActionResult(response);
         }
+
+
+        [HttpGet("follow-requests")]
+        public async Task<IActionResult> GetFollowRequests([FromQuery] GetFollowRequestsQuery request)
+        {
+            var response = await mediator.Send(request);
+            return Ok(response);
+        }
+
 
         [HttpPost("add/{userId}")]
         public async Task<IActionResult> SendFollowRequest([FromRoute] SendFollowRequestCommand request)
@@ -42,6 +54,13 @@ namespace Posts.Api.Controllers
 
         [HttpPost("accept/{userId}")]
         public async Task<IActionResult> AcceptFollowRequest([FromRoute] AcceptFollowRequestCommand request)
+        {
+            var response = await mediator.Send(request);
+            return CreateActionResult(response);
+        }
+
+        [HttpPost("decline/{userId}")]
+        public async Task<IActionResult> AcceptFollowRequest([FromRoute] DeclineFollowCommand request)
         {
             var response = await mediator.Send(request);
             return CreateActionResult(response);

@@ -7,6 +7,7 @@ export const useUserStore = defineStore('user', {
   }),
   getters: {
     getUsername: (state) => state.userInfo.username,
+    getUserId: (state) => state.userInfo.userId,
     getRefreshToken: (state) => state.userInfo.refreshToken,
     getAccessToken: (state) => state.userInfo.accessToken,
     getIsAuthenticated: (state) => !!(state.userInfo.accessToken && state.userInfo.refreshToken),

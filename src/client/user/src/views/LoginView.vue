@@ -4,16 +4,15 @@
       <img class="login-logo"
         src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/2560px-Instagram_logo.svg.png"
         alt="Instagram" />
-      <h2 class="login-title">Giriş Yap</h2>
+      <h2 class="login-title">Login</h2>
       <form @submit.prevent="handleLogin">
-        <input v-model="loginModel.username" type="text" class="login-input px-2" placeholder="Kullanıcı Adı"
-          required />
-        <input v-model="loginModel.password" type="password" class="login-input px-2" placeholder="Şifre" required />
-        <button type="submit" class="login-btn">Giriş Yap</button>
+        <input v-model="loginModel.username" type="text" class="login-input px-2" placeholder="Username" required />
+        <input v-model="loginModel.password" type="password" class="login-input px-2" placeholder="Password" required />
+        <button type="submit" class="login-btn">Login</button>
       </form>
       <div class="login-footer">
-        <span>Hesabın yok mu?</span>
-        <router-link :to="{ name: 'register' }" class="signup-link">Hesap oluştur</router-link>
+        <span>Need an accound?</span>
+        <router-link :to="{ name: 'register' }" class="signup-link">Register</router-link>
       </div>
     </div>
   </div>
@@ -39,20 +38,22 @@ export default {
       this.$bus.emit('isBusy', true);
       this.$axios.post('/auth/login', this.loginModel)
         .then((response) => {
+          console.log(response.data)
           if (response.data.data && !response.data.isError) {
-            toast.success("Giriş işlemi başarılı!");
+            toast.success("Login succeded");
             useUserStore().setUserInfo(response.data.data as LoginResponseModel)
             this.$router.push({ name: 'main-page' });
           } else {
-            toast.error(response.data.errorMessages || 'Giriş başarısız.');
+            toast.error(response.data.errorMessages || 'Login failed');
           }
           nextTick(() => {
             this.$bus.emit('isBusy', false);
           });
         })
         .catch(error => {
+          console.log(error.data)
           this.$bus.emit('isBusy', false);
-          toast.error(error.response?.data?.errorMessages || 'Giriş sırasında bir hata oluştu.');
+          toast.error(error.response?.data?.errorMessages[0] || 'Error occured during login');
         });
     }
   },

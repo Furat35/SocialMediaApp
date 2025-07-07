@@ -1,6 +1,10 @@
+import { UserListDto } from '../users/UserListDto'
+
 export class FriendListModel {
-  constructor(
-    public userId: number,
-    public createDate: string,
-  ) {}
+  constructor(init?: Partial<FriendListModel>) {
+    Object.assign(this, init)
+  }
+  userId: number
+  user: UserListDto
+  createDate: string
 }

@@ -11,6 +11,7 @@ namespace IdentityServer.Api.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IFileService, FileService>();
             services.AddDbContext<IdentityDbContext>(opt =>
             {
                 opt.UseSqlServer(configuration.GetConnectionString("IdentityDb"));

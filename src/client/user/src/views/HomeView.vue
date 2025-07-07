@@ -1,4 +1,5 @@
 <template>
+  <!-- <div class="ig-bg"> -->
   <div class="ig-bg">
     <nav class="navbar ig-navbar">
       <div class="ig-navbar-inner  align-items-center justify-content-between">
@@ -13,13 +14,9 @@
           <input class="form-control ig-search" type="search" placeholder="Search" aria-label="Search" />
         </div>
         <div class="ig-navbar-section ig-navbar-right">
-          <!-- <button class="">Login</button> -->
-          <router-link :to="{ name: 'login' }" class="ig-login-btn ig-nav-link" v-if="isAuthenticated"
-            @click="logout"><span class="material-icons">logout</span>
-            Logout</router-link>
-          <router-link :to="{ name: 'login' }" class="ig-login-btn ig-nav-link" v-else><span
-              class="material-icons">login</span>
-            Login</router-link>
+          <router-link :to="{ name: 'friend-requests' }" class="ig-login-btn ig-nav-link"><span
+              class="material-icons">group</span>
+            Friend Requests</router-link>
 
         </div>
       </div>
@@ -42,12 +39,6 @@ export default {
     },
     isAuthenticated() {
       return this.userStore.getIsAuthenticated;
-    }
-  },
-  methods: {
-    logout() {
-      this.userStore.logout();
-      this.$router.push({ name: 'login' });
     }
   }
 }

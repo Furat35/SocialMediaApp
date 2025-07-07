@@ -83,7 +83,7 @@ namespace Posts.Api.Controllers
         }
 
         [HttpPost("add-comment")]
-        public async Task<IActionResult> AddPostComment(CreatePostCommentCommand request)
+        public async Task<IActionResult> AddPostComment([FromQuery] CreatePostCommentCommand request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);

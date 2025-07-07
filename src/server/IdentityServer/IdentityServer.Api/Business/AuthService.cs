@@ -1,7 +1,9 @@
 ﻿using BuildingBlocks.Models;
+using Consul.Filtering;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Interfaces;
 using IdentityServer.Api.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
@@ -41,6 +43,7 @@ namespace IdentityServer.Api.Business
 
             var response = new LoginResponseModel
             {
+                UserId = user.Id,
                 AccessToken = encodedJwt,
                 RefreshToken = refreshToken,
                 Username = user.Username
@@ -64,7 +67,8 @@ namespace IdentityServer.Api.Business
                 Username = registerModel.UserName,
                 Email = registerModel.Email,
                 HashedPassword = HashPassword(registerModel.Password, salt),
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                ProfileImage = Path.Combine(Directory.GetCurrentDirectory(), "images/users/profile/default.jpg")
             };
             await userService.AddAsync(newAppUser);
             var saveResult = await userService.SaveChangesAsync();
@@ -99,6 +103,7 @@ namespace IdentityServer.Api.Business
 
             var response = new LoginResponseModel
             {
+                UserId = user.Id,
                 Username = user.Username,
                 AccessToken = newAccessToken,
                 RefreshToken = newRefreshToken

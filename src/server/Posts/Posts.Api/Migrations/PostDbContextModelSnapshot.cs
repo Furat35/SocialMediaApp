@@ -67,9 +67,6 @@ namespace Posts.Api.Migrations
                     b.Property<DateTime>("CreateDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsValid")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("ModifyDate")
                         .HasColumnType("datetime2");
 
@@ -77,6 +74,9 @@ namespace Posts.Api.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("RespondingUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

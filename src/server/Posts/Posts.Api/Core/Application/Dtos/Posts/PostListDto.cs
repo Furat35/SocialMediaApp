@@ -10,7 +10,7 @@ namespace Posts.Api.Core.Application.Dtos.Posts
         public string Description { get; set; }
         public string Location { get; set; }
         public DateTime CreateDate { get; set; }
-        public ICollection<Like> Likes { get; set; }
-        public ICollection<Comment> Comments { get; set; }
+        public ICollection<LikeListDto> Likes { get; set; }
+        public ICollection<CommentListDto> Comments { get; set; }
     }
 }

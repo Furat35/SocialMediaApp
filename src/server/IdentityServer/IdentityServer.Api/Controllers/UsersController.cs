@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Controllers;
+using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Business.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,20 @@ namespace IdentityServer.Api.Controllers
         {
             var user = await userService.GetUsersById(userIds);
             return CreateActionResult(user);
+        }
+
+        [HttpPost("update")]
+        public async Task<IActionResult> GetUsersById([FromForm] AppUserUpdateDto updateDto)
+        {
+            var user = await userService.UpdateUser(updateDto);
+            return CreateActionResult(user);
+        }
+
+        [HttpGet("image")]
+        public async Task<IActionResult> GetUserImage([FromQuery] int userId)
+        {
+            var response = await userService.GetUserImage(userId);
+            return File(response.image, response.fileType);
         }
     }
 }

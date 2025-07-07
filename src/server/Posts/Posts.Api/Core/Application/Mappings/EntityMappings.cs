@@ -13,6 +13,10 @@ namespace Posts.Api.Core.Application.Mappings
             CreateMap<CreatePostCommandRequest, Post>();
             CreateMap<CreatePostCommentCommand, Comment>();
             CreateMap<Post, PostListDto>();
+        
+        
+            CreateMap<Like, LikeListDto>();
+            CreateMap<Comment, CommentListDto>();
         }
     }
 }

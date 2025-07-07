@@ -5,5 +5,6 @@ export class PaginationModel<T> {
   isValidPage: number
   page: number
   pageCount: number
+  totalEntities: number
   pageSize: number
 }

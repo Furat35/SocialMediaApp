@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Friends;
 using Posts.Api.Core.Application.Repositories;
+using Posts.Api.Core.Domain.Enums;
 using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Friends.GetFollowersByUserId
@@ -15,10 +16,10 @@ namespace Posts.Api.Core.Application.Features.Friends.GetFollowersByUserId
         public async Task<ResponseDto<PaginationResponseModel<FriendListDto>>> Handle(GetFollowersByUserIdQuery request, CancellationToken cancellationToken)
         {
             var friends = friendRepository
-               .Get(_ => (_.RequestingUserId == httpContext.GetUserId() || _.RespondingUserId == httpContext.GetUserId()) && _.IsValid)
+               .Get(_ => (_.RequestingUserId == request.UserId || _.RespondingUserId == request.UserId) && _.Status == FriendStatus.Accepted)
                .Select(_ => new FriendListDto
                {
-                   UserId = _.RequestingUserId == httpContext.GetUserId() ? _.RespondingUserId : _.RequestingUserId,
+                   UserId = _.RequestingUserId == request.UserId ? _.RespondingUserId : _.RequestingUserId,
                    CreateDate = _.CreateDate
                });
 
@@ -30,7 +31,7 @@ namespace Posts.Api.Core.Application.Features.Friends.GetFollowersByUserId
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var paginationModel = new PaginationResponseModel<FriendListDto>(request.Page, request.PageSize, pageCount, responseData);
+            var paginationModel = new PaginationResponseModel<FriendListDto>(request.Page, request.PageSize, pageCount, totalFriends, responseData);
 
             return ResponseDto<PaginationResponseModel<FriendListDto>>.Success(paginationModel, HttpStatusCode.OK);
         }

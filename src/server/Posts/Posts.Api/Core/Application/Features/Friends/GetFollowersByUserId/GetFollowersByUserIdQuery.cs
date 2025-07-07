@@ -6,5 +6,6 @@ namespace Posts.Api.Core.Application.Features.Friends.GetFollowersByUserId
 {
     public class GetFollowersByUserIdQuery : PaginationRequestModel, IRequest<ResponseDto<PaginationResponseModel<FriendListDto>>>
     {
+        public int UserId { get; set; }
     }
 }

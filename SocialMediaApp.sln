@@ -28,7 +28,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Posts", "Posts", "{91B670ED
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Posts.Api", "src\server\Posts\Posts.Api\Posts.Api.csproj", "{39EAE17E-BD79-489D-9B96-F71228CDAABD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialMediaApp.Aggregator", "src\server\Gateway\SocialMediaApp.Aggregator\SocialMediaApp.Aggregator.csproj", "{039488E3-1F1D-455F-BB5E-D0782540DF30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialMediaApp.Aggregator", "src\server\Gateway\SocialMediaApp.Aggregator\SocialMediaApp.Aggregator.csproj", "{039488E3-1F1D-455F-BB5E-D0782540DF30}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chat", "Chat", "{B160D9AA-89BE-4EA1-8C84-CD31669F223F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat.SignalR", "src\server\Chat\Chat.SignalR\Chat.SignalR.csproj", "{8C54E3DC-925D-4382-841A-D25BE47EB0C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,6 +64,10 @@ Global
 		{039488E3-1F1D-455F-BB5E-D0782540DF30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{039488E3-1F1D-455F-BB5E-D0782540DF30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{039488E3-1F1D-455F-BB5E-D0782540DF30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C54E3DC-925D-4382-841A-D25BE47EB0C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C54E3DC-925D-4382-841A-D25BE47EB0C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C54E3DC-925D-4382-841A-D25BE47EB0C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C54E3DC-925D-4382-841A-D25BE47EB0C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +83,8 @@ Global
 		{91B670ED-7975-414B-884D-A981113CF958} = {BEAB3E56-29C0-4D3F-9C36-FEE3E2296DAB}
 		{39EAE17E-BD79-489D-9B96-F71228CDAABD} = {91B670ED-7975-414B-884D-A981113CF958}
 		{039488E3-1F1D-455F-BB5E-D0782540DF30} = {A41B894D-9A23-4AEC-869C-15094A09B113}
+		{B160D9AA-89BE-4EA1-8C84-CD31669F223F} = {BEAB3E56-29C0-4D3F-9C36-FEE3E2296DAB}
+		{8C54E3DC-925D-4382-841A-D25BE47EB0C2} = {B160D9AA-89BE-4EA1-8C84-CD31669F223F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A3BEBA82-5B89-425B-B766-1C3C40F40815}

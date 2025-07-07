@@ -7,6 +7,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ExploreComponent from '../components/home/explore.vue'
 import ProfileComponent from '../components/home/profile.vue'
+import FriendRequests from '../components/home/friend-requests.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -40,6 +41,11 @@ const router = createRouter({
           name: 'profile',
           path: '/profile',
           component: ProfileComponent,
+        },
+        {
+          name: 'friend-requests',
+          path: '/friend-requests',
+          component: FriendRequests,
         },
       ],
     },

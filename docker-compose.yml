@@ -33,3 +33,10 @@ services:
       context: .
       dockerfile: src/server/Gateway/SocialMediaApp.Aggregator/Dockerfile
 
+
+  chat.signalr:
+    image: ${DOCKER_REGISTRY-}chatsignalr
+    build:
+      context: .
+      dockerfile: src/server/Chat/Chat.SignalR/Dockerfile
+

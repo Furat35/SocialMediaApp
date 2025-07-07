@@ -6,9 +6,9 @@
       },
       "UseServiceDiscovery": true,
       "ServiceName": "socialmediaapp.aggregator",
-      "DownstreamPathTemplate": "/api/feeds",
+      "DownstreamPathTemplate": "/api/aggregated/feeds",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/feeds",
+      "UpstreamPathTemplate": "/aggregated/feeds",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
@@ -21,9 +21,9 @@
       },
       "UseServiceDiscovery": true,
       "ServiceName": "socialmediaapp.aggregator",
-      "DownstreamPathTemplate": "/api/feeds/{everything}",
+      "DownstreamPathTemplate": "/api/aggregated/feeds/{everything}",
       "DownstreamScheme": "http",
-      "UpstreamPathTemplate": "/feeds/{everything}",
+      "UpstreamPathTemplate": "/aggregated/feeds/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {
@@ -31,6 +31,36 @@
       },
       "AddHeadersToDownstream": {
         "Authorization": "Bearer {Token}"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/aggregated/friends",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/aggregated/friends",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/aggregated/friends/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/aggregated/friends/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
       }
     },
     {
@@ -117,6 +147,21 @@
       "DownstreamPathTemplate": "/api/friends",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/friends",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "chat.signalr",
+      "DownstreamPathTemplate": "/api/chats/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/chats/{everything}",
       "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
       "UpstreamScheme": "http",
       "AuthenticationOptions": {

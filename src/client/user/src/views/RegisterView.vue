@@ -4,21 +4,21 @@
             <img class="register-logo"
                 src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Instagram_logo.svg/2560px-Instagram_logo.svg.png"
                 alt="Instagram" />
-            <h2 class="register-title">Üye Ol</h2>
+            <h2 class="register-title">Register</h2>
             <form @submit.prevent="handleRegister">
                 <input v-model="registerModel.username" type="text" class="register-input px-2"
                     placeholder="Kullanıcı Adı" required />
                 <input v-model="registerModel.fullname" type="text" class="register-input px-2"
                     placeholder="İsim Soyisim" required />
-                <input v-model="registerModel.email" type="email" class="register-input px-2" placeholder="Mail"
+                <input v-model="registerModel.email" type="email" class="register-input px-2" placeholder="Email"
                     required />
-                <input v-model="registerModel.password" type="password" class="register-input px-2" placeholder="Şifre"
-                    required />
-                <button type="submit" class="register-btn">Üye Ol</button>
+                <input v-model="registerModel.password" type="password" class="register-input px-2"
+                    placeholder="Password" required />
+                <button type="submit" class="register-btn">Register</button>
             </form>
             <div class="register-footer">
-                <span>Hesabın var mı?</span>
-                <router-link :to="{ name: 'login' }" class="login-link">Giriş</router-link>
+                <span>Have an account?</span>
+                <router-link :to="{ name: 'login' }" class="login-link">Login</router-link>
             </div>
         </div>
     </div>
@@ -44,18 +44,18 @@ export default {
             this.$axios.post('auth/register', this.registerModel)
                 .then((response) => {
                     if (response.data.data) {
-                        toast.success("Kayıt işlemi başarılı!");
+                        toast.success("Register succeded");
                         this.$router.push({ name: 'login' });
                         Object.assign(response.data.data, this.registerModel);
                     } else {
-                        toast.error(response.data.errorMessages || 'Kayıt başarısız.');
+                        toast.error(response.data.errorMessages || 'Register failed');
                     }
                     nextTick(() => {
                         this.$bus.emit('isBusy', false);
                     });
                 })
                 .catch(error => {
-                    toast.error(error.response?.data?.errorMessages || 'Kayıt sırasında bir hata oluştu.');
+                    toast.error(error.response?.data?.errorMessages || 'Error occured during register');
                     this.$bus.emit('isBusy', false);
                 });
         }

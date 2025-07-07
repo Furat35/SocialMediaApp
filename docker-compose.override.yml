@@ -88,3 +88,19 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+  chat.signalr:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8004
+      - ConnectionStrings__ChatDb=Server=sqlserver_socialmedia,1433;Database=ChatDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
+    ports:
+      - "8004:8004"
+    depends_on:
+      - sqlserver_socialmedia 
+      - consul_socialmedia
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro

@@ -1,6 +1,7 @@
-import { LoginResponseModel } from '../../../src/shared/models/auth-models/LoginResponseModel'
 import axios from 'axios'
 import { useUserStore } from '../helpers/store'
+import router from '../router'
+import { toast } from './toast'
 
 // let accessToken =
 //   localStorageToken != null ? (JSON.parse(localStorageToken) as LoginResponseModel).accessToken : ''
@@ -20,5 +21,17 @@ instance.interceptors.request.use((config) => {
 
   return config
 })
+
+instance.interceptors.response.use(
+  (response) => response,
+  (err) => {
+    if (err.response && err.response.status === 401) {
+      router.push({ name: 'login' })
+      toast.warning(`Unauthenticated user!`)
+    }
+
+    return Promise.reject(err)
+  },
+)
 
 export { instance as axios }
