@@ -1,13 +1,14 @@
 import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import MainPageComponent from '../components/home/main-page.vue'
-import SettingsComponent from '../components/home/settings.vue'
-import MessageComponent from '../components/home/message.vue'
+import MainPageComponent from '../components/home/main-page/index.vue'
+import SettingsComponent from '../components/home/settings/index.vue'
+import MessageComponent from '../components/home/messages/index.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
-import ExploreComponent from '../components/home/explore.vue'
-import ProfileComponent from '../components/home/profile.vue'
-import FollowerRequestComponent from '../components/home/follower-requests.vue'
+import ExploreComponent from '../components/home/explore/index.vue'
+import ProfileComponent from '../components/home/profiles/index.vue'
+import FollowerRequestComponent from '../components/home/follower-requests/index.vue'
+import CreatePostComponent from '../components/home/posts/create.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -48,6 +49,11 @@ const router = createRouter({
           component: FollowerRequestComponent,
         },
       ],
+    },
+    {
+      name: 'create-post',
+      path: '/create-post',
+      component: CreatePostComponent,
     },
     {
       path: '/login',

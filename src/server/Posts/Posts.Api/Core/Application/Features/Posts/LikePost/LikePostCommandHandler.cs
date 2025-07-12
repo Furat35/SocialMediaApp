@@ -9,13 +9,17 @@ using System.Net;
 namespace Posts.Api.Core.Application.Features.Posts.LikePost
 {
     public class LikePostCommandHandler(IPostRepository postRepository, IMapper mapper,
-        IHttpContextAccessor httpContext)
+        IFollowerRepository followerRepository, IHttpContextAccessor httpContext)
         : IRequestHandler<LikePostCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(LikePostCommand request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Likes]);
             if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
+            if (await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
+            {
+                return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
+            }
             if (post.Likes.Any(_ => _.UserId == httpContext.GetUserId()))
                 return ResponseDto<bool>.Success(true, HttpStatusCode.OK);
 

@@ -48,8 +48,9 @@
                         <div class="text-muted small mt-1">{{ post.createDate.toLocaleDateString('en-En') }}</div>
                     </div>
                 </div>
-                <div v-show="!postScrollModel.hasMore" class="mb-4" style="text-align: center">Couldn't find anymore
-                    psots...
+                <div v-show="!postScrollModel.hasMore" class="mb-4 mt-5" style="text-align: center">Couldn't find
+                    anymore
+                    posts...
                 </div>
             </div>
             <div v-if="showCommentsModal" class="comments-modal-backdrop" @click.self="closeCommentsModal">
@@ -108,8 +109,8 @@
 </template>
 
 <script lang="ts">
-import LeftSidebar from '../shared/left-sidebar.vue';
-import FollowerSuggestions from '../shared/follower-suggestions.vue';
+import LeftSidebar from '@user/src/components/shared/left-sidebar.vue';
+import FollowerSuggestions from '@user/src/components/shared/follower-suggestions.vue';
 import { PostListDto } from '@user/src/models/posts/PostListDto';
 import { PaginationModel } from '@shared/models/PaginationModel';
 import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
@@ -118,6 +119,7 @@ import { PostLikeListDto } from '@user/src/models/posts/PostLikeListDto';
 import { PostCommentListDto } from '@user/src/models/posts/PostCommentListDto';
 import { UserListDto } from '@shared/models/users/UserListDto';
 import { ScrollModel } from '@shared/models/ScrollModel';
+import { toast } from '@user/src/helpers/toast';
 
 export default {
     components: {
@@ -130,13 +132,13 @@ export default {
     },
     data() {
         return {
-            stories: [
-                { image: 'https://randomuser.me/api/portraits/women/1.jpg' },
-                { image: 'https://randomuser.me/api/portraits/men/2.jpg' },
-                { image: 'https://randomuser.me/api/portraits/women/3.jpg' },
-                { image: 'https://randomuser.me/api/portraits/men/4.jpg' },
-                { image: 'https://randomuser.me/api/portraits/women/5.jpg' }
-            ],
+            // stories: [
+            //     { image: 'https://randomuser.me/api/portraits/women/1.jpg' },
+            //     { image: 'https://randomuser.me/api/portraits/men/2.jpg' },
+            //     { image: 'https://randomuser.me/api/portraits/women/3.jpg' },
+            //     { image: 'https://randomuser.me/api/portraits/men/4.jpg' },
+            //     { image: 'https://randomuser.me/api/portraits/women/5.jpg' }
+            // ],
             posts: [] as PostListDto[],
             followers: new PaginationModel<FollowerListModel>(),
             postScrollModel: new ScrollModel(),
@@ -168,14 +170,19 @@ export default {
         },
         async addComment() {
             if (!this.newComment.trim() || !this.selectedPost) return;
-            var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
-            if (!response.data.isError) {
-                this.selectedPost.comments.push(new PostCommentListDto({
-                    postId: this.selectedPost.id,
-                    userComment: this.newComment, createDate: new Date(), user: new UserListDto({ username: useUserStore().getUsername, id: useUserStore().getUserId })
-                }))
+            try {
+                var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
+                if (!response.data.isError) {
+                    this.selectedPost.comments.push(new PostCommentListDto({
+                        postId: this.selectedPost.id,
+                        userComment: this.newComment, createDate: new Date(), user: new UserListDto({ username: useUserStore().getUsername, id: useUserStore().getUserId })
+                    }))
+                    this.newComment = '';
+                }
+            } catch (error) {
+                toast.warning(error.response.data.errorMessages.join(', ') || 'Could not add comment');
             }
-            this.newComment = '';
+
         },
         openCommentsModal(post: PostListDto) {
             this.selectedPost = post;
@@ -198,10 +205,14 @@ export default {
                 this.removeLike(post);
                 return;
             }
-            var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
-            if (!response.data.isError) {
-                var like = new PostLikeListDto({ user: new UserListDto({ id: this.userId }), postId: post.id });
-                post.likes.push(like)
+            try {
+                var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
+                if (!response.data.isError) {
+                    var like = new PostLikeListDto({ user: new UserListDto({ id: this.userId }), postId: post.id });
+                    post.likes.push(like)
+                }
+            } catch (error) {
+                toast.warning(error.response.data.errorMessages.join(', ') || 'Could not like post');
             }
         },
         async removeLike(post: PostListDto) {
@@ -215,22 +226,17 @@ export default {
 
             try {
                 var response = await this.$axios.get(`/aggregated/feeds?page=${this.postScrollModel.currentPage}&pageSize=5`)
-
                 if (response.data.data) {
                     const rawPosts = response.data.data as PostListDto[];
                     const newPosts = rawPosts.map(p => new PostListDto(p))
                     await this.setPostImages(newPosts);
                     this.posts.push(...newPosts);
 
-                    if (!response.data.hasNext) {
-                        this.postScrollModel.hasMore = false;
-                    } else {
-                        this.postScrollModel.currentPage++;
-                    }
-
+                    if (!response.data.hasNext) this.postScrollModel.hasMore = false;
+                    else this.postScrollModel.currentPage++;
                 }
             } catch (error) {
-                console.error('Error fetching posts:', error);
+                toast.warning(error.response.data.errorMessages.join(', ') || 'Could not get the posts');
             } finally {
                 this.postScrollModel.isLoading = false;
             }

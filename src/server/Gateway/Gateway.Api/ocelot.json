@@ -98,6 +98,21 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
+      "ServiceName": "identityserver.api",
+      "DownstreamPathTemplate": "/api/users",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/users",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AddHeadersToDownstream": {
+        "Authorization": "Bearer {Token}"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
       "ServiceName": "posts.api",
       "DownstreamPathTemplate": "/api/posts",
       "DownstreamScheme": "http",

@@ -3,7 +3,8 @@
     public enum FollowStatus
     {
         Pending,
-        Accepted,
-        Declined
+        Following,
+        Declined,
+        NotFollowing
     }
 }

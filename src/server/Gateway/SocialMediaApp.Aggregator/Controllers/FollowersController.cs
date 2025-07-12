@@ -31,12 +31,12 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpGet("byUser")]
-        public async Task<IActionResult> GetFollowersByUserId([FromQuery] int userId, [FromQuery] PaginationRequestModel request)
+        public async Task<IActionResult> GetFollowersByUserId([FromQuery] int userId, [FromQuery] int status, [FromQuery] PaginationRequestModel request)
         {
             var httpClient = httpClientFactory.CreateClient("default");
 
             var postApiServiceUrl = await consulClient.ResolveServiceUrl("posts.api");
-            var followersResponse = await httpClient.GetFromJsonAsync<PaginationResponseModel<FollowerListDto>>($"{postApiServiceUrl}/api/followers/byuser?userId={userId}&page={request.Page}&pageSize={request.PageSize}");
+            var followersResponse = await httpClient.GetFromJsonAsync<PaginationResponseModel<FollowerListDto>>($"{postApiServiceUrl}/api/followers/byuser?status={status}&userId={userId}&page={request.Page}&pageSize={request.PageSize}");
 
             var requestingUserIds = followersResponse.Data.Select(p => p.RequestingUserId).Except([userId]);
             var respondingUserIds = followersResponse.Data.Select(p => p.RespondingUserId).Except([userId]);

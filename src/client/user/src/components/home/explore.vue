@@ -1,3 +1,0 @@
-<template>
-    Keşfet sayfası
-    </template>

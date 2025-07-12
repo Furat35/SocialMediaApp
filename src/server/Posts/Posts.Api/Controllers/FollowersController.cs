@@ -7,8 +7,11 @@ using Posts.Api.Core.Application.Features.Followers.DeclineFollow;
 using Posts.Api.Core.Application.Features.Followers.GetFollowerPosts;
 using Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId;
 using Posts.Api.Core.Application.Features.Followers.GetFollowRequests;
-using Posts.Api.Core.Application.Features.Followers.RemoveFollowRequest;
+using Posts.Api.Core.Application.Features.Followers.GetFollowStatus;
+using Posts.Api.Core.Application.Features.Followers.Unfollow;
 using Posts.Api.Core.Application.Features.Followers.SendFollowRequestFriend;
+using Posts.Api.Core.Application.Features.Followers.UnfollowFollower;
+using Posts.Api.Core.Application.Features.Followers.CancelFollowRequest;
 
 namespace Posts.Api.Controllers
 {
@@ -22,14 +25,20 @@ namespace Posts.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowerPostsQuery request)
+        [HttpGet("status")]
+        public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowStatusQuery request)
         {
             var response = await mediator.Send(request);
             return Ok(response);
         }
 
-
+        [HttpGet()]
+        public async Task<IActionResult> GetFollowStatus([FromQuery] GetFollowerPostsQuery request)
+        {
+            var response = await mediator.Send(request);
+            return Ok(response);
+        }
+        
         [HttpGet("follow-requests")]
         public async Task<IActionResult> GetFollowRequests([FromQuery] GetFollowRequestsQuery request)
         {
@@ -38,15 +47,15 @@ namespace Posts.Api.Controllers
         }
 
 
-        [HttpPost("add/{userId}")]
+        [HttpPost("follow/{userId}")]
         public async Task<IActionResult> SendFollowRequest([FromRoute] SendFollowRequestCommand request)
         {
             var response = await mediator.Send(request);
             return CreateActionResult(response);
         }
 
-        [HttpPost("remove/{userId}")]
-        public async Task<IActionResult> RemoveFollowRequest([FromRoute] RemoveFollowRequestCommand request)
+        [HttpPost("unfollow/{userId}")]
+        public async Task<IActionResult> Unfollow([FromRoute] UnfollowCommand request)
         {
             var response = await mediator.Send(request);
             return CreateActionResult(response);
@@ -60,7 +69,14 @@ namespace Posts.Api.Controllers
         }
 
         [HttpPost("decline/{userId}")]
-        public async Task<IActionResult> AcceptFollowRequest([FromRoute] DeclineFollowCommand request)
+        public async Task<IActionResult> DeclineFollowRequest([FromRoute] DeclineFollowCommand request)
+        {
+            var response = await mediator.Send(request);
+            return CreateActionResult(response);
+        }
+
+        [HttpPost("cancel/{userId}")]
+        public async Task<IActionResult> CancelFollowRequest([FromRoute] CancelFollowRequestCommand request)
         {
             var response = await mediator.Send(request);
             return CreateActionResult(response);

@@ -5,5 +5,7 @@ namespace Posts.Api.Core.Application.Repositories
 {
     public interface IFollowerRepository : IGenericRepository<Follower>
     {
+        Task<bool> IsFollowing(int userId1, int userId2);
+        Task<bool> ActiveUserHasAccessToGivenUsersPosts(int userId);
     }
 }

@@ -1,5 +1,5 @@
 <template>
-    <div style="display: flex;margin-top: 40px;">
+    <div style="display: flex; margin-top: 40px;">
         <div style="width: 80px;" class="ig-sidebar ig-sidebar-left-fixed">
             <LeftSidebar></LeftSidebar>
         </div>
@@ -20,7 +20,9 @@
             <section class="ig-messages-chat" v-if="selectedUser">
                 <div class="ig-messages-chat-header">
                     <img :src="`${gatewayUrl}users/image?userId=${selectedUser.id}`" class="ig-messages-user-avatar" />
-                    <span class="ig-messages-user-name">{{ selectedUser.fullname }}</span>
+                    <span class="ig-messages-user-name" @click="goToProfile(selectedUser.id)"
+                        style="cursor: pointer;">{{
+                            selectedUser.fullname }}</span>
                 </div>
                 <div class="ig-messages-chat-body" ref="chatBody" @scroll="handleChatScroll">
                     <div v-for="(msg, idx) in messageHistory" :key="idx"
@@ -44,7 +46,7 @@
 </template>
 
 <script lang="ts">
-import LeftSidebar from '../shared/left-sidebar.vue';
+import LeftSidebar from '@user/src/components/shared/left-sidebar.vue';
 import 'https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js'
 import { useSignalRConnection } from '@user/src/services/signalr'
 import { useUserStore } from '@user/src/helpers/store';
@@ -80,6 +82,9 @@ export default {
         this.connection.stop();
     },
     methods: {
+        goToProfile(newUserId: number) {
+            this.$router.push({ name: 'profile', query: { userId: newUserId } });
+        },
         handleChatScroll() {
             const el = this.$refs.chatBody as HTMLElement;
             if (!el) return;
@@ -115,7 +120,9 @@ export default {
             if (this.followerScrollModel.isLoading) return;
             this.followerScrollModel.isLoading = true;
             try {
-                var response = await this.$axios.get(`/aggregated/followers/byUser?userId=${useUserStore().getUserId}&page=${this.followerScrollModel.currentPage}&pageSize=25`)
+                var response = await this.$axios.get(`/aggregated/followers/byUser?status=1&userId=${useUserStore().getUserId}&page=${this.followerScrollModel.currentPage}&pageSize=25`)
+                console.log('test')
+                console.log(response.data)
                 if (response.data.data) {
                     const newFollowers = response.data.data.map(f => new FollowerListModel(f))
                     this.totalFollowers = response.data.totalEntities

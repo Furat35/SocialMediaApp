@@ -1,4 +1,5 @@
 import { UserListDto } from '../users/UserListDto'
+import { FollowStatusEnum } from './FollowStatusEnum'
 
 export class FollowerListModel {
   constructor(init?: Partial<FollowerListModel>) {
@@ -7,5 +8,6 @@ export class FollowerListModel {
   requestingUserId: number
   respondingUserId: number
   user: UserListDto
+  status: FollowStatusEnum
   createDate: string
 }

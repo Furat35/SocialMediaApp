@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
+using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Business.Interfaces;
 using IdentityServer.Api.Data.Context;
@@ -15,7 +16,28 @@ namespace IdentityServer.Api.Business
         IServiceProvider serviceProvider, IFileService fileService)
         : UserRepository(context), IUserService
     {
-        public readonly Lazy<IAuthService> _authService = new Lazy<IAuthService>(() => serviceProvider.GetRequiredService<IAuthService>());
+        public readonly Lazy<IAuthService> _authService = new(() => serviceProvider.GetRequiredService<IAuthService>());
+      
+        public async Task<PaginationResponseModel<AppUser>> GetUsers(UserRequestDto request)
+        {
+            var users = Get(_ => _.IsValid);
+
+            if (request.Fullname is not null)
+                users = users.Where(_ => _.Fullname.Contains(request.Fullname) || _.Username.Contains(request.Fullname));
+            else if(request.Username is not null)
+                users = users.Where(_ => _.Fullname.Contains(request.Username) || _.Username.Contains(request.Username));
+
+            var totalUsers = await users.CountAsync();
+            var pageCount = totalUsers / request.PageSize + (totalUsers % request.PageSize > 0 ? 1 : 0);
+
+            var response = await users
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            return new PaginationResponseModel<AppUser>(request.Page, request.PageSize, pageCount, totalUsers, response);
+        }
+
         public async Task<ResponseDto<AppUser>> GetUserById(int userId)
         {
             var user = await GetByIdAsync(userId);

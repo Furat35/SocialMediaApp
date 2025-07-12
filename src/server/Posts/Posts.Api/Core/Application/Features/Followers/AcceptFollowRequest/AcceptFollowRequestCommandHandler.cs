@@ -19,11 +19,11 @@ namespace Posts.Api.Core.Application.Features.Followers.AcceptFollowRequest
             if (follow is null)
                 return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
 
-            if (follow.Status == FollowStatus.Accepted)
+            if (follow.Status == FollowStatus.Following)
                 return ResponseDto<bool>.Fail("Is already a Follow.", HttpStatusCode.BadRequest);
 
             follow.IsValid = true;
-            follow.Status = FollowStatus.Accepted;
+            follow.Status = FollowStatus.Following;
 
             return ResponseDto<bool>
              .GenerateResponse(await followerRepository.SaveChangesAsync() > 0)

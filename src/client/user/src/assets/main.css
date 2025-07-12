@@ -23,7 +23,8 @@ body {
   border-radius: 0 0 8px 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   z-index: 100;
-  max-height: 220px;
+  max-height: 200px;
+  min-height: 150px;
   overflow-y: auto;
   margin: 0;
   padding: 0;
@@ -43,11 +44,14 @@ body {
 
 .search-dropdown-empty {
   padding: 10px 16px;
+  text-align: center;
   color: #888;
 }
 
 .ig-bg {
-  min-height: calc(100vh - 40px);
+  position: inherit;
+  top: 0;
+  min-height: 100%;
   background-color: #fafafa;
   font-family: 'Roboto', Arial, sans-serif;
 }
@@ -122,7 +126,6 @@ body {
   background: none;
   border: none;
   padding: 5px;
-
   cursor: pointer;
   color: #262626;
   font-size: 10px;
@@ -148,7 +151,7 @@ body {
   max-width: 1200px;
   margin: 0px auto 0 80px;
   padding-top: 60px;
-  min-height: 80vh;
+  min-height: calc(100vh);
   gap: 32px;
 }
 
@@ -163,13 +166,14 @@ body {
 
 .ig-sidebar-left-fixed {
   position: fixed;
+  display: flex;
+  align-items: center;
   top: 40px;
   left: 0;
-  height: 100vh;
+  height: calc(100vh - 40px);
   width: 70px; /* or your preferred width */
   background: #fff;
   z-index: 100;
-  padding-top: 60px; /* adjust if you have a navbar */
   overflow-y: auto;
 }
 
@@ -825,8 +829,11 @@ strong {
 }
 
 @media (max-width: 767.98px) {
+  .ig-bg {
+    min-height: calc(100vh - 60px);
+  }
   .ig-navbar {
-    height: auto;
+    height: 60px;
   }
 
   .ig-navbar-inner {

@@ -1,4 +1,5 @@
-﻿using BuildingBlocks.Models;
+﻿using BuildingBlocks.Extensions;
+using BuildingBlocks.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Repositories;
@@ -7,12 +8,13 @@ using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Followers.DeclineFollow
 {
-    public class DeclineFollowCommandHandler(IFollowerRepository followerRepository)
+    public class DeclineFollowCommandHandler(IFollowerRepository followerRepository, IHttpContextAccessor httpContext)
         : IRequestHandler<DeclineFollowCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(DeclineFollowCommand request, CancellationToken cancellationToken)
         {
-            var follow = await followerRepository.Get(_ => _.RequestingUserId == request.UserId).FirstOrDefaultAsync(cancellationToken);
+            var follow = await followerRepository.Get(_ => _.RequestingUserId == request.UserId && _.RespondingUserId == httpContext.GetUserId())
+                .FirstOrDefaultAsync(cancellationToken);
             if (follow is null)
                 return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
 

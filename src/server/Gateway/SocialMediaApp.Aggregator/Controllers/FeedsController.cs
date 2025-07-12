@@ -15,12 +15,16 @@ namespace SocialMediaApp.Aggregator.Controllers
         public async Task<IActionResult> GetUserPosts([FromRoute] int userId, [FromQuery] PaginationRequestModel request)
         {
             var postsServiceUrl = await consulClient.ResolveServiceUrl("posts.api");
-            var postsResponse = await _httpClient.GetFromJsonAsync<PaginationResponseModel<PostListDto>>($"{postsServiceUrl}/api/posts?userId={userId}&page={request.Page}&pageSize={request.PageSize}");
+            var content = await _httpClient.GetAsync($"{postsServiceUrl}/api/posts?userId={userId}&page={request.Page}&pageSize={request.PageSize}");
+            var postsResponse = await content.Content.ReadFromJsonAsync<PaginationResponseModel<PostListDto>>();
+
+            if (!content.IsSuccessStatusCode)
+                return new ObjectResult(postsResponse) { StatusCode = (int)content.StatusCode };
 
             if (!postsResponse.Data.Any())
                 return Ok(postsResponse);
 
-            var postUserIds = postsResponse.Data.FirstOrDefault().UserId;
+            var postUserIds = postsResponse.Data.First().UserId;
             var postUserResult = await GetUsersWithGivenIdsAsync([postUserIds]);
 
             var commentUserIds = new List<int>();

@@ -10,7 +10,7 @@
                     No Follow requests at the moment.
                 </div>
                 <div v-else>
-                    <div v-for="follower in followers" :key="follower.userId" class="follower-request-card">
+                    <div v-for="follower in followers" :key="follower.user.id" class="follower-request-card">
                         <img :src="`${gatewayUrl}users/image?userId=${follower.user.id}`"
                             class="follower-request-avatar" />
                         <div class="follower-request-info">
@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import LeftSidebar from '../shared/left-sidebar.vue';
+import LeftSidebar from '@user/src/components/shared/left-sidebar.vue';
 import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
 import { ScrollModel } from '@shared/models/ScrollModel';
 

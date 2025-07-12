@@ -9,6 +9,9 @@ namespace BuildingBlocks.Models
         public bool IsError { get; set; }
         public T Data { get; set; }
 
+        public static ResponseDto<T> Fail(T data, string message, HttpStatusCode statusCode)
+            => new() { Data = data, ErrorMessages = [message], StatusCode = statusCode, IsError = true };
+
         public static ResponseDto<T> Fail(string message, HttpStatusCode statusCode)
             => new() { ErrorMessages = [message], StatusCode = statusCode, IsError = true };
 

@@ -8,13 +8,17 @@ using System.Net;
 namespace Posts.Api.Core.Application.Features.Posts.UnlikePost
 {
     public class UnlikePostCommandHandler(IPostRepository postRepository, IMapper mapper,
-        IHttpContextAccessor httpContext)
+        IFollowerRepository followerRepository, IHttpContextAccessor httpContext)
         : IRequestHandler<UnlikePostCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(UnlikePostCommand request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Likes]);
             if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
+            if (await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
+            {
+                return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
+            }
 
             var likeToRemove = post.Likes.First(_ => _.UserId == httpContext.GetUserId());
             if (likeToRemove == null) return ResponseDto<bool>.Fail("Not found", HttpStatusCode.NotFound);

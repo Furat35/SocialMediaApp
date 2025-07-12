@@ -29,6 +29,7 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowRequests
             var pageCount = totalfollowRequests / request.PageSize + (totalfollowRequests % request.PageSize > 0 ? 1 : 0);
 
             var response = await followerResponse
+                .OrderByDescending(_ => _.CreateDate)
                 .Skip((request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);

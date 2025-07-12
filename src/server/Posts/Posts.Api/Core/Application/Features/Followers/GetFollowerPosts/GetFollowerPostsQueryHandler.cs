@@ -16,7 +16,7 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowerPosts
         public async Task<PaginationResponseModel<PostListDto>> Handle(GetFollowerPostsQuery request, CancellationToken cancellationToken)
         {
             var followers = followerRepository
-                .Get(_ => _.Status == FollowStatus.Accepted && (_.RequestingUserId == httpContext.GetUserId() || _.RespondingUserId == httpContext.GetUserId()));
+                .Get(_ => _.Status == FollowStatus.Following && (_.RequestingUserId == httpContext.GetUserId() || _.RespondingUserId == httpContext.GetUserId()));
 
             var userPosts = postRepository
                 .Get(_ => _.IsValid, includes: [i => i.Likes, i => i.Comments])
