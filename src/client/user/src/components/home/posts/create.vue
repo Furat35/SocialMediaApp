@@ -1,89 +1,94 @@
-<template>
-    <div class="mt-5">
-        <button @click="openModal">Create New Post</button>
-        <div v-if="showModal" class="modal-overlay">
-            <div class="modal">
-                <h2>Create Post</h2>
-                <form @submit.prevent="submitPost">
-                    <div>
-                        <label for="title">Title:</label>
-                        <input id="title" v-model="title" required />
-                    </div>
-                    <div>
-                        <label for="content">Content:</label>
-                        <textarea id="content" v-model="content" required></textarea>
-                    </div>
-                    <div class="modal-actions">
-                        <button type="submit">Post</button>
-                        <button type="button" @click="closeModal">Cancel</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<template lang="pug">
+   .modal.fade.show(v-if='showPostCreateModal' tabindex='-1' style='display: block; background: rgba(0,0,0,0.5);')
+        .modal-dialog
+            .modal-content
+                .modal-header
+                    h1#staticBackdropLabel.modal-title.fs-5 Create New Post
+                    button.btn-close(type='button' @click='closeModal' aria-label='Close')
+                .modal-body
+                    div
+                        input(name='id' hidden='')
+                        .mb-3.row
+                            label.col-sm-4.col-form-label(for='username') Description
+                            .col-sm-8
+                                input#description.form-control(type='text' v-model='postCreateModal.description')
+                        .mb-3.row
+                            label.col-sm-4.col-form-label(for='fullname') Location
+                            .col-sm-8
+                                input#location.form-control(type='text' v-model='postCreateModal.location')
+                        .mb-3.row
+                            label.col-sm-4.form-label(for='profileImage') Post image
+                            .col-sm-8
+                                img(v-if='previewImage' :src='previewImage' alt='Selected Image Preview' style='max-width: 100px; margin-top: 10px;')
+                                input#profileImage.form-control.mt-1(type='file' @change='handleFileChange' accept='image/*')
+                .modal-footer.justify-content-center
+                    button.btn.btn-primary(type='button' @click='submitPost') Post
+
 </template>
 
 <script>
+import { PostCreateDto } from '@user/src/models/posts/PostCreateDto';
+import { useUserStore } from '@user/src/helpers/store';
+
 export default {
+    props: {
+        showPostCreateModal: {
+            type: Boolean,
+            required: true
+        }
+    },
     data() {
         return {
-            showModal: false,
             title: '',
-            content: ''
+            content: '',
+            postCreateModal: new PostCreateDto(),
+            userId: useUserStore().getUserId,
+            previewImage: null,
+            gatewayUrl: import.meta.env.VITE_GatewayUrl,
         };
     },
     methods: {
-        openModal() {
-            this.showModal = true;
-        },
         closeModal() {
-            this.showModal = false;
             this.title = '';
             this.content = '';
+            this.$emit('closeModal');
         },
-        submitPost() {
-            const post = {
-                title: this.title,
-                content: this.content,
-                createdAt: new Date()
+        handleFileChange(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.previewImage = null;
+                this.postCreateModal.image = null;
+                return;
+            }
+
+            this.postCreateModal.image = file;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                this.previewImage = e.target.result; // base64 data URL
             };
-            alert('Post created:\n' + JSON.stringify(post, null, 2));
+            reader.readAsDataURL(file);
+        },
+        async submitPost() {
+            const formData = new FormData()
+            formData.append("description", this.postCreateModal.description ?? '')
+            formData.append("location", this.postCreateModal.location)
+            formData.append("file", this.postCreateModal.image ?? '');
+
+            try {
+                var response = await this.$axios.post(`/posts`, formData);
+                if (response.data.data && !response.data.isError) toast.success("Update succeded");
+                this.$emit('closeModal');
+            }
+            catch (err) {
+                toast.error(response.data.errorMessages || 'Error occured during update');
+            }
+
+            // alert('Post created:\n' + JSON.stringify(post, null, 2));
             this.closeModal();
         }
     }
 };
 </script>
 
-<style scoped>
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 99999;
-    /* Increased z-index */
-}
-
-.modal {
-    background: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    min-width: 300px;
-    z-index: 100000;
-    /* Increased z-index */
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
-    /* Add shadow for visibility */
-}
-
-.modal-actions {
-    margin-top: 1rem;
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-</style>
+<style scoped></style>

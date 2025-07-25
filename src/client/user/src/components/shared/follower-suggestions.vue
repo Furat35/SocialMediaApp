@@ -1,18 +1,14 @@
-<template>
+<template lang="pug">
     <!-- Right Sidebar -->
-    <aside class="ig-sidebar ig-sidebar-right">
-        <div class="ig-suggestions">
-            <div class="ig-suggestions-title">Suggestions For You</div>
-            <div v-for="user in suggestedUsers" :key="user.username" class="ig-suggestion-row">
-                <img :src="user.avatar" class="ig-suggestion-avatar" />
-                <div class="ig-suggestion-info">
-                    <div class="ig-suggestion-username">{{ user.username }}</div>
-                    <div class="ig-suggestion-desc">{{ user.desc }}</div>
-                </div>
-                <button class="btn btn-link ig-follower-btn">Follow</button>
-            </div>
-        </div>
-    </aside>
+    aside.ig-sidebar.ig-sidebar-right
+        .ig-suggestions
+            .ig-suggestions-title Suggestions For You
+            .ig-suggestion-row(v-for='user in suggestedUsers' :key='user.username')
+                img.ig-suggestion-avatar(:src='user.avatar')
+                .ig-suggestion-info
+                    .ig-suggestion-username {{ user.username }}
+                    .ig-suggestion-desc {{ user.desc }}
+                button.btn.btn-link.ig-follower-btn Follow
 </template>
 
 <script lang="ts">

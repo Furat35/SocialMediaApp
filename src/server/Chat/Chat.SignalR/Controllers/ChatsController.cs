@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Chat.SignalR.Controllers
 {
+    // feature: yeni mesaj geldiğinde mesajın okunmadığı işaretlenmesi 
     [Route("api/[controller]")]
     [ApiController]
     public class ChatsController(IHttpContextAccessor httpContextAccessor, ChatDbContext context) : ControllerBase
@@ -18,10 +19,10 @@ namespace Chat.SignalR.Controllers
                 .Where(_ => (_.From == httpContextAccessor.GetUserId() && _.To == userId) || (_.To == httpContextAccessor.GetUserId() && _.From == userId));
 
             var totalMessages = await messages.CountAsync();
-            var pageCount = totalMessages / request.PageSize + (totalMessages % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling( (double) totalMessages / request.PageSize );
             var response = await messages
-                .OrderBy(_ => _.SentDate)
-                .Skip((request.Page - 1) * request.PageSize)
+                .OrderByDescending(_ => _.SentDate)
+                .Skip(( request.Page - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync();
 
@@ -29,5 +30,46 @@ namespace Chat.SignalR.Controllers
 
             return Ok(paginationModel);
         }
+
+        [HttpGet("lastChats")]
+        public async Task<IActionResult> LastChats([FromQuery] PaginationRequestModel request)
+        {
+            var userId = httpContextAccessor.GetUserId();
+            var messages = await context.Messages
+                 .FromSqlRaw(@"
+                    WITH RankedMessages AS (
+                        SELECT *,
+                            ROW_NUMBER() OVER (
+                                PARTITION BY 
+                                    CASE WHEN [From] < [To] THEN [From] ELSE [To] END,
+                                    CASE WHEN [From] < [To] THEN [To] ELSE [From] END
+                                ORDER BY SentDate DESC
+                            ) AS rn
+                        FROM Messages
+                        WHERE [From] = {0} OR [To] = {0}
+                    )
+                    SELECT * FROM RankedMessages WHERE rn = 1 ", userId)
+                 .ToListAsync();
+
+            var totalMessages = messages.Count();
+            var pageCount = totalMessages / request.PageSize + (totalMessages % request.PageSize > 0 ? 1 : 0);
+            var response = messages
+                .OrderByDescending(_ => _.SentDate)
+                .Skip((request.Page - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .Select(_ => _.From == userId ? _.To : _.From) 
+                .ToList();
+            var paginationModel = new PaginationResponseModel<int>(request.Page, request.PageSize, pageCount, totalMessages, response);
+
+            return Ok(paginationModel);
+        }
+
+        //[HttpPost("message-read")]
+        //public async Task<int> SetMessagesAsRead([FromQuery] int userId)
+        //{
+        //    return await context.Messages
+        //        .Where(_ => _.To == httpContextAccessor.GetUserId() && _.From == userId && !_.IsRead)
+        //        .ExecuteUpdateAsync(_ => _.SetProperty(m => m.IsRead, true));
+        //}
     }
 }

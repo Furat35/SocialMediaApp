@@ -4,11 +4,10 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Followers;
 using Posts.Api.Core.Application.Repositories;
-using Posts.Api.Core.Domain.Enums;
 
 namespace Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId
 {
-    public class GetFollowersByUserIdQueryHandler(IFollowerRepository followerRepository, IHttpContextAccessor httpContext, IMapper mapper)
+    public class GetFollowersByUserIdQueryHandler(IFollowerRepository followerRepository)
         : IRequestHandler<GetFollowersByUserIdQuery, PaginationResponseModel<FollowerListDto>>
     {
         public async Task<PaginationResponseModel<FollowerListDto>> Handle(GetFollowersByUserIdQuery request, CancellationToken cancellationToken)
@@ -25,7 +24,7 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId
                });
 
             var totalFollowers = await followers.CountAsync();
-            var pageCount = totalFollowers / request.PageSize + (totalFollowers % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling((double)totalFollowers / request.PageSize);
 
             var responseData = await followers
                 .Skip((request.Page - 1) * request.PageSize)

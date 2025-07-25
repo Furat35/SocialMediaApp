@@ -15,7 +15,7 @@ body {
 
 .search-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: 100px;
   left: auto;
   right: auto;
   background: #fff;
@@ -29,7 +29,7 @@ body {
   margin: 0;
   padding: 0;
   list-style: none;
-  width: 350px;
+  width: 250px;
 }
 
 .search-dropdown-item {

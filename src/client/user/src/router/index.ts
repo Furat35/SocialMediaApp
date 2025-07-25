@@ -8,7 +8,6 @@ import RegisterView from '../views/RegisterView.vue'
 import ExploreComponent from '../components/home/explore/index.vue'
 import ProfileComponent from '../components/home/profiles/index.vue'
 import FollowerRequestComponent from '../components/home/follower-requests/index.vue'
-import CreatePostComponent from '../components/home/posts/create.vue'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -50,11 +49,7 @@ const router = createRouter({
         },
       ],
     },
-    {
-      name: 'create-post',
-      path: '/create-post',
-      component: CreatePostComponent,
-    },
+
     {
       path: '/login',
       name: 'login',

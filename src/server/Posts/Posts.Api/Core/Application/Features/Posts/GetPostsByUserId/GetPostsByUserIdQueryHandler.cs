@@ -21,7 +21,7 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
                 .Get(_ => _.UserId == request.UserId && _.IsValid, includes: [i => i.Likes, i => i.Comments]);
 
             var totalUserPosts = await userPosts.CountAsync();
-            var pageCount = totalUserPosts / request.PageSize + (totalUserPosts % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling((double)totalUserPosts / request.PageSize);
 
             var response = await userPosts
                 .Skip((request.Page - 1) * request.PageSize)

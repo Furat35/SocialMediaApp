@@ -8,10 +8,10 @@ using Posts.Api.Core.Application.Features.Followers.GetFollowerPosts;
 using Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId;
 using Posts.Api.Core.Application.Features.Followers.GetFollowRequests;
 using Posts.Api.Core.Application.Features.Followers.GetFollowStatus;
-using Posts.Api.Core.Application.Features.Followers.Unfollow;
 using Posts.Api.Core.Application.Features.Followers.SendFollowRequestFriend;
 using Posts.Api.Core.Application.Features.Followers.UnfollowFollower;
 using Posts.Api.Core.Application.Features.Followers.CancelFollowRequest;
+using Posts.Api.Core.Application.Features.Followers.GetFollowersByUserIds;
 
 namespace Posts.Api.Controllers
 {
@@ -25,6 +25,13 @@ namespace Posts.Api.Controllers
             return Ok(response);
         }
 
+        [HttpPost("search")]
+        public async Task<IActionResult> GetFollowersByUserIds([FromBody] GetFollowersByUserIdsQuery request)
+        {
+            var response = await mediator.Send(request);
+            return Ok(response);
+        }
+
         [HttpGet("status")]
         public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowStatusQuery request)
         {
@@ -32,7 +39,7 @@ namespace Posts.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<IActionResult> GetFollowStatus([FromQuery] GetFollowerPostsQuery request)
         {
             var response = await mediator.Send(request);

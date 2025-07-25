@@ -7,7 +7,6 @@ namespace Posts.Api.Core.Application.Features.Posts.CreatePost
     {
         public string Description { get; set; }
         public string Location { get; set; }
-        public string Fullname { get; set; }
         public IFormFile File { get; set; }
     }
 

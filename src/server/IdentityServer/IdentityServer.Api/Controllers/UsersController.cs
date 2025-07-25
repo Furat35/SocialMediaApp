@@ -22,6 +22,14 @@ namespace IdentityServer.Api.Controllers
             return CreateActionResult(user);
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchUsers([FromQuery] UserRequestDto request)
+        {
+            var users = await userService.SearchedUserIds(request);
+            return Ok(users);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> GetUsersById([FromBody] List<int> userIds)
         {

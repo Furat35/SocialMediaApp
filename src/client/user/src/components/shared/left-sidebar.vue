@@ -1,38 +1,50 @@
-<template>
-        <aside class="ig-sidebar ig-sidebar-left">
-                <nav class="ig-nav-menu"><a></a>
-                        <router-link :to="{ name: 'main-page' }" class="ig-nav-link d-block"><span
-                                        class="material-icons">home</span></router-link>
-                        <router-link :to="{ name: 'explore' }" class="ig-nav-link d-block"><span
-                                        class="material-icons">explore</span></router-link>
-                        <router-link :to="{ name: 'message' }" class="ig-nav-link d-block"><span
-                                        class="material-icons">send</span></router-link>
-                        <router-link :to="{ name: 'follower-requests' }" class="ig-login-btn ig-nav-link"><span
-                                        class="material-icons">group</span></router-link>
-                        <router-link :to="{ name: 'create-post' }" class="ig-nav-link d-block"><span
-                                        class=" material-icons">add_box</span></router-link>
-                        <router-link :to="{ name: 'profile', query: { userId: userStore.getUserId } }"
-                                class="ig-nav-link d-block">
-                                <span class=" material-icons">account_circle</span></router-link>
-                        <router-link :to="{ name: 'login' }" class="ig-nav-link d-block"><span class="material-icons"
-                                        @click="logout">logout</span></router-link>
+<template lang="pug">
+aside.ig-sidebar.ig-sidebar-left
+        nav.ig-nav-menu
+                router-link.ig-nav-link.d-block(:to="{ name: 'main-page' }")
+                        span.material-icons home
+                router-link.ig-nav-link.d-block(:to="{ name: 'explore' }")
+                        span.material-icons explore
+                router-link.ig-nav-link.d-block(:to="{ name: 'message' }")
+                        span.material-icons send
+                router-link.ig-login-btn.ig-nav-link(:to="{ name: 'follower-requests' }")
+                        span.material-icons group
+                .ig-nav-link.d-block(@click='showPostCreateModal = true' style='cursor: pointer;')
+                        span.material-icons add_box
+                router-link.ig-nav-link.d-block(:to="{ name: 'profile', query: { userId: userStore.getUserId } }")
+                        span.material-icons account_circle
+                router-link.ig-nav-link.d-block(:to="{ name: 'login' }")
+                        span.material-icons(@click='logout') logout
+CreatePostComponent(:showpostcreatemodal='showPostCreateModal' @closemodal='closeModal')
 
-                </nav>
-        </aside>
 </template>
 
 <script>
 import { useUserStore } from '@user/src/helpers/store';
+import CreatePostComponent from '@user/src/components/home/posts/create.vue'
+
 export default {
+        components: {
+                CreatePostComponent
+        },
         computed: {
                 userStore() {
                         return useUserStore();
+                }
+        },
+        data() {
+                return {
+                        showPostCreateModal: false
                 }
         },
         methods: {
                 logout() {
                         this.userStore.logout();
                         this.$router.push({ name: 'login' });
+                },
+                closeModal() {
+                        this.showPostCreateModal = false;
+                        console.log(this.showPostCreateModal);
                 }
         }
 }

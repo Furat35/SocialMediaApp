@@ -29,7 +29,7 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowerPosts
                 );
 
             var totalUserPosts = await userPosts.CountAsync();
-            var pageCount = totalUserPosts / request.PageSize + (totalUserPosts % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling((double)totalUserPosts / request.PageSize);
 
             var responsePosts = await userPosts
                 .Skip((request.Page - 1) * request.PageSize)

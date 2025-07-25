@@ -48,7 +48,7 @@ namespace Posts.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost(CreatePostCommandRequest request)
+        public async Task<IActionResult> CreatePost([FromForm] CreatePostCommandRequest request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);

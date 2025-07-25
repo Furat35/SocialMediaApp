@@ -87,7 +87,8 @@ namespace SocialMediaApp.Aggregator.Controllers
             return Ok(postsResponse);
         }
 
-        public async Task<List<UserListDto>> GetUsersWithGivenIdsAsync(List<int> userIds)
+        [NonAction]
+        private async Task<List<UserListDto>> GetUsersWithGivenIdsAsync(List<int> userIds)
         {
             var identityServiceUrl = await consulClient.ResolveServiceUrl("identityserver.api");
             var request = await _httpClient.PostAsJsonAsync($"{identityServiceUrl}/api/users", userIds);

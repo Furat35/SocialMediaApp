@@ -1,110 +1,70 @@
-<template>
-    <!-- Feed -->
-    <div class="ig-main-layout">
-        <aside class="ig-sidebar ig-sidebar-left-fixed">
-            <LeftSidebar />
-        </aside>
-
-        <main class="ig-feed-main">
-            <!-- Stories -->
-            <!-- <div class="ig-stories-bar">
-                <div class="story-circle ig-story" v-for="(story, index) in stories" :key="index">
-                    <img :src="story.image" alt="story" />
-                </div>
-            </div> -->
-            <!-- Feed -->
-            <div>
-                <div class="post-card ig-post " v-for="(post, index) in posts" :key="index">
-                    <div class="post-header ig-post-header">
-                        <!-- <img :src="post.profile" alt="profile" /> -->
-                        <span @click="goToProfile(post.user.id)" style="cursor: pointer;">
-                            <img :src="`${gatewayUrl}users/image?userId=${post.userId}`" alt="profile" />
-                            <strong>{{ post.user.fullname }}</strong>
-                        </span>
-
-                        <!-- <span class="material-icons ig-post-menu ms-auto">more_horiz</span> -->
-                    </div>
-                    <div class="post-image ig-post-image">
-                        <img :src="`${post.imageUrl}`" alt="post" />
-                    </div>
-                    <div class="ig-post-actions p-3">
-                        <span class="material-icons ig-action" @click="likePost(post)"
-                            :style="{ color: post.likes.find(_ => _.user.id == userId) ? '#c13584' : '' }">
-                            favorite_border</span>
-
-                        <span class="material-icons ig-action"
-                            @click="openCommentsModal(post)">chat_bubble_outline</span>
-                        <!-- <span class="material-icons ig-action">send</span> -->
-                    </div>
-                    <div class="px-3 pb-2">
-                        <strong @click="openLikesModal(post)" style="cursor: pointer;">{{ post.likes.length }}
-                            Likes</strong><br>
-                        <strong>{{ post.description }}</strong>
-                        <div v-if="post.comments.length > 0">
-                            <span @click="openCommentsModal(post)" class="ig-action">View all {{ post.comments.length }}
-                                comments</span>
-                        </div>
-
-                        <div class="text-muted small mt-1">{{ post.createDate.toLocaleDateString('en-En') }}</div>
-                    </div>
-                </div>
-                <div v-show="!postScrollModel.hasMore" class="mb-4 mt-5" style="text-align: center">Couldn't find
-                    anymore
-                    posts...
-                </div>
+<template lang="pug">
+// Feed
+.ig-main-layout
+    aside.ig-sidebar.ig-sidebar-left-fixed
+        LeftSidebar
+    main.ig-feed-main
+        // Stories
+        //
+            <div class="ig-stories-bar">
+            <div class="story-circle ig-story" v-for="(story, index) in stories" :key="index">
+            <img :src="story.image" alt="story" />
             </div>
-            <div v-if="showCommentsModal" class="comments-modal-backdrop" @click.self="closeCommentsModal">
-                <div class="comments-modal">
-                    <button class="close-modal-btn" @click="closeCommentsModal" aria-label="Close">&times;</button>
-                    <div class="post-image">
-                        <img :src="`${selectedPost.imageUrl}`" alt="post" />
-                    </div>
-                    <div v-if="selectedPost" class="comments-panel">
-                        <div class="comments-list">
-                            <div v-for="comment in selectedPost.comments" :key="comment.id" class="comment">
-                                <span @click="goToProfile(comment.user.id)" style="cursor: pointer;">
-                                    <img :src="`${gatewayUrl}users/image?userId=${comment.user.id}`" class="me-2"
-                                        style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                                    <strong>{{ comment.user.username }}</strong> <span>{{ comment.userComment }}</span>
-                                </span>
-                                <span style="display: block;margin-right: auto;text-align: end;font-size: small;">
-                                    {{ comment.createDate.toLocaleDateString('en-En') }}
-                                </span>
-                                <hr>
-                            </div>
-                        </div>
-                        <div class="add-comment">
-                            <input v-model="newComment" @keyup.enter="addComment" type="text"
-                                placeholder="Add a comment..." />
-                            <button @click="addComment" :disabled="!newComment.trim()">Post</button>
-                        </div>
-                    </div>
-                </div>
             </div>
-
-            <div v-if="showLikesModal" class="likes-modal-backdrop" @click.self="closeLikesModal">
-                <div class="likes-modal">
-                    <button class="close-modal-btn" @click="closeLikesModal" aria-label="Close">&times;</button>
-                    <div v-if="selectedPost" class="likes-panel">
-                        <div class="likes-list">
-                            <div class="mb-3">
-                                <strong>{{ selectedPost.likes.length }} Likes</strong>
-                            </div>
-                            <hr>
-                            <div v-for="like in selectedPost.likes" :key="like.id" class="like mb-2">
-                                <div @click="goToProfile(like.user.id)" style="cursor: pointer;">
-                                    <img :src="`${gatewayUrl}users/image?userId=${like.user.id}`" class="me-2"
-                                        style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                                    <strong>{{ like.user.username }}</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-        <FollowerSuggestions></FollowerSuggestions>
-    </div>
+        // Feed
+        div
+            .post-card.ig-post(v-for='(post, index) in posts' :key='index')
+                .post-header.ig-post-header
+                    // <img :src="post.profile" alt="profile" />
+                    span(@click='goToProfile(post.user.id)' style='cursor: pointer;')
+                        img(:src='`${gatewayUrl}users/image?userId=${post.userId}`' alt='profile')
+                        strong {{ post.user.fullname }}
+                    // <span class="material-icons ig-post-menu ms-auto">more_horiz</span>
+                .post-image.ig-post-image
+                    img(:src='`${post.imageUrl}`' alt='post')
+                .ig-post-actions.p-3
+                    span.material-icons.ig-action(@click='likePost(post)' :style="{ color: post.likes.find(_ => _.user.id == userId) ? '#c13584' : '' }") favorite_border
+                    span.material-icons.ig-action(@click='openCommentsModal(post)') chat_bubble_outline
+                    // <span class="material-icons ig-action">send</span>
+                .px-3.pb-2
+                    strong(@click='openLikesModal(post)' style='cursor: pointer;') {{ post.likes.length }} Likes
+                    br
+                    strong {{ post.description }}
+                    div(v-if='post.comments.length > 0')
+                        span.ig-action(@click='openCommentsModal(post)') View all {{ post.comments.length }} comments
+                    .text-muted.small.mt-1 {{ post.createDate.toLocaleDateString(&apos;en-En&apos;) }}
+            .mb-4.mt-5(v-show='!postScrollModel.hasMore' style='text-align: center') Couldn't find anymore posts...
+        .comments-modal-backdrop(v-if='showCommentsModal' @click.self='closeCommentsModal')
+            .comments-modal
+                button.close-modal-btn(@click='closeCommentsModal' aria-label='Close') &times;
+                .post-image
+                    img(:src='`${selectedPost.imageUrl}`' alt='post')
+                .comments-panel(v-if='selectedPost')
+                    .comments-list
+                        .comment(v-for='comment in selectedPost.comments' :key='comment.id')
+                            span(@click='goToProfile(comment.user.id)' style='cursor: pointer;')
+                                img.me-2(:src='`${gatewayUrl}users/image?userId=${comment.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
+                                strong {{ comment.user.username }}
+                                span {{ comment.userComment }}
+                            span(style='display: block;margin-right: auto;text-align: end;font-size: small;')
+                            | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
+                            hr
+                    .add-comment
+                        input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
+                        button(@click='addComment' :disabled='!newComment.trim()') Post
+        .likes-modal-backdrop(v-if='showLikesModal' @click.self='closeLikesModal')
+            .likes-modal
+                button.close-modal-btn(@click='closeLikesModal' aria-label='Close') &times;
+                .likes-panel(v-if='selectedPost')
+                    .likes-list
+                        .mb-3
+                            strong {{ selectedPost.likes.length }} Likes
+                        hr
+                        .like.mb-2(v-for='like in selectedPost.likes' :key='like.id')
+                            div(@click='goToProfile(like.user.id)' style='cursor: pointer;')
+                                img.me-2(:src='`${gatewayUrl}users/image?userId=${like.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
+                                strong {{ like.user.username }}
+    FollowerSuggestions
 
 </template>
 

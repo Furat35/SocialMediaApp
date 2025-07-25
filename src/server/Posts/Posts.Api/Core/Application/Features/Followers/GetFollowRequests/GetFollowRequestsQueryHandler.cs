@@ -26,7 +26,7 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowRequests
                 });
 
             var totalfollowRequests = await followerResponse.CountAsync();
-            var pageCount = totalfollowRequests / request.PageSize + (totalfollowRequests % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling((double)totalfollowRequests / request.PageSize);
 
             var response = await followerResponse
                 .OrderByDescending(_ => _.CreateDate)

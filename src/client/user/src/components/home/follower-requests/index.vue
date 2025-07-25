@@ -1,35 +1,21 @@
-<template>
-    <div class="ig-main-layout">
-        <aside class="ig-sidebar ig-sidebar-left-fixed">
-            <LeftSidebar />
-        </aside>
-        <main class="ig-feed-main">
-            <section class="follower-requests-section">
-                <h2 style="text-align: center;">Follow Requests</h2>
-                <div v-if="followers.length === 0" class="no-requests">
-                    No Follow requests at the moment.
-                </div>
-                <div v-else>
-                    <div v-for="follower in followers" :key="follower.user.id" class="follower-request-card">
-                        <img :src="`${gatewayUrl}users/image?userId=${follower.user.id}`"
-                            class="follower-request-avatar" />
-                        <div class="follower-request-info">
-                            <strong @click="goToProfile(follower.user.id)" style="cursor: pointer;">{{
-                                follower.user.fullname
-                            }}</strong>
-                            <div class="follower-request-username" @click="goToProfile(follower.user.id)"
-                                style="cursor: pointer;">@{{ follower.user.username
-                                }}</div>
-                        </div>
-                        <div class="follower-request-actions">
-                            <button @click="acceptRequest(follower.user.id)" class="accept-btn">Accept</button>
-                            <button @click="declineRequest(follower.user.id)" class="decline-btn">Decline</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
+<template lang="pug">
+    .ig-main-layout
+        aside.ig-sidebar.ig-sidebar-left-fixed
+            LeftSidebar
+        main.ig-feed-main
+            section.follower-requests-section
+                h2(style='text-align: center') Follow Requests
+                .no-requests.mt-5(v-if='followers.length === 0')
+                    | No Follow requests at the moment.
+                .mt-5(v-else)
+                    .follower-request-card(v-for='follower in followers' :key='follower.user.id')
+                        img.follower-request-avatar(:src='`${gatewayUrl}users/image?userId=${follower.user.id}`')
+                        .follower-request-info
+                            strong(@click='goToProfile(follower.user.id)' style='cursor: pointer;')  {{ follower.user.fullname }}
+                            .follower-request-username(@click='goToProfile(follower.user.id)' style='cursor: pointer;') @{{ follower.user.username }}
+                        .follower-request-actions
+                            button.accept-btn(@click='acceptRequest(follower.user.id)') Accept
+                            button.decline-btn(@click='declineRequest(follower.user.id)') Decline
 </template>
 
 <script lang="ts">

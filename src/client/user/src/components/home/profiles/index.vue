@@ -1,156 +1,103 @@
-<template>
-  <div class="ig-main-layout">
-    <aside class="ig-sidebar ig-sidebar-left-fixed">
-      <LeftSidebar />
-    </aside>
-    <main class="ig-profile-main">
-      <!-- Profile Header -->
-      <section class="profile-header">
-        <img class="profile-avatar" :src="`${gatewayUrl}users/image?userId=${userId}`" alt="avatar" />
-        <div class="profile-info">
-          <div class="profile-username" style="line-height: 30px;">
-            <div>
-              <span>{{ user.fullname }}</span> <br>
-              <span class="fs-6" style="font-weight: 100;">{{ user.username }}</span>
-            </div>
-            <div style="display: flex;justify-content: end;align-items: flex-start; flex-basis: 400px;">
-              <div class="btn-group">
-                <div v-if="userId != useUserStore.getUserId">
-                  <button class="btn" @click="sendFollowRequest"
-                    v-if="followStatus.status == FollowStatusEnum.NOTFOLLOWING">
-                    <span class="material-icons"
-                      style="vertical-align: middle; font-size: 20px; margin-right: 6px;">person_add</span>
-                    Follow
-                  </button>
-                  <button class="btn" @click="sendFollowRequest"
-                    v-else-if="followStatus.status == FollowStatusEnum.DECLINED">
-                    <span class="material-icons"
-                      style="vertical-align: middle; font-size: 20px; margin-right: 6px;">person_add</span>
-                    Follow
-                  </button>
-                  <button class="btn" @click="unfollow" v-else-if="followStatus.status == FollowStatusEnum.FOLLOWING">
-                    <span class="material-icons" style="vertical-align: middle; font-size: 20px; margin-right: 6px;"
-                      alt="delet">person_off</span>
-                    Unfollow
-                  </button>
-                  <button class="btn" @click="declineFollowRequest"
-                    v-else-if="followStatus.status == FollowStatusEnum.PENDING && followStatus.respondingUserId == useUserStore.getUserId">
-                    Decline Request
-                  </button>
-                  <button class="btn" @click="cancelFollowRequest"
-                    v-if="followStatus.status == FollowStatusEnum.PENDING">
-                    Cancel Follow Request
-                  </button>
-                </div>
-              </div>
-              <router-link :to="{ name: 'setting' }" class="ig-nav-link d-block"
-                style="padding-top: 5px; padding-bottom: 5px;" v-if="showSettings"><span class=" material-icons"
-                  style="margin-left: auto">settings</span></router-link>
-            </div>
-
-          </div>
-          <div class="profile-stats">
-            <span><strong>{{ totalPosts }}</strong> posts</span>
-            <span style="cursor: pointer" @click="openFollowersModal"><strong>{{ totalFollowers }}</strong>
-              followers</span>
-          </div>
-          <div class="profile-bio">{{ user.bio }} </div>
-        </div>
-      </section>
-      <hr><br>
-      <!-- Posts Grid -->
-      <section class="profile-posts-grid">
-        <div class="profile-post-thumb" v-for="post in posts" :key="post.id" @click="openCommentsModal(post)">
-          <img :src="post.imageUrl" alt="post" />
-          <div class="profile-post-overlay">
-            <span class="material-icons" :style="{ color: post.likes.find(_ => _.user.id == userId) ? '#c13584' : '' }"
-              @click.stop="likePost(post)">favorite_border</span>
-            <span class="px-1" @click.stop="openLikesModal(post)">{{ post.likes.length }}</span>
-            <span class="material-icons">chat_bubble_outline</span> <span>{{ post.comments.length }}</span>
-          </div>
-        </div>
-      </section>
-      <div style="text-align: center;"
-        v-if="posts.length === 0 && (followStatus.status == FollowStatusEnum.FOLLOWING || userId == useUserStore.getUserId)">
-        No
-        post
-        found...</div>
-      <div style="text-align: center;"
-        v-else-if="followStatus.status == FollowStatusEnum.NOTFOLLOWING && userId != useUserStore.getUserId">Not
-        Following...
-      </div>
-      <!-- Comments Modal -->
-      <div v-if="showCommentsModal" class="comments-modal-backdrop" @click.self="closeCommentsModal">
-        <div class="comments-modal">
-          <button class="close-modal-btn" @click="closeCommentsModal" aria-label="Close">&times;</button>
-          <div class="post-image">
-            <img :src="`${selectedPost.imageUrl}`" alt="post" />
-          </div>
-          <div v-if="selectedPost" class="comments-panel">
-            <div class="comments-list">
-              <div v-for="comment in selectedPost.comments" :key="comment.id" class="comment">
-                <span @click="goToProfile(comment.user.id)" style="cursor: pointer;">
-                  <img :src="`${gatewayUrl}users/image?userId=${comment.user.id}`" class="me-2"
-                    style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                  <strong>{{ comment.user.username }}</strong> <span>{{ comment.userComment }}</span>
-                </span>
-                <span style="display: block;margin-right: auto;text-align: end;font-size: small;">
-                  {{ comment.createDate.toLocaleDateString('en-En') }}
-                </span>
-                <hr>
-              </div>
-            </div>
-            <div class="add-comment">
-              <input v-model="newComment" @keyup.enter="addComment" type="text" placeholder="Add a comment..." />
-              <button @click="addComment" :disabled="!newComment.trim()">Post</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Likes Modal -->
-      <div v-if="showLikesModal" class="likes-modal-backdrop" @click.self="closeLikesModal">
-        <div class="likes-modal">
-          <button class="close-modal-btn" @click="closeLikesModal" aria-label="Close">&times;</button>
-          <div v-if="selectedPost" class="likes-panel">
-            <div class="likes-list">
-              <div class="mb-3">
-                <strong>{{ selectedPost.likes.length }} Likes</strong>
-              </div>
-              <hr>
-              <div v-for="like in selectedPost.likes" :key="like.id" class="like mb-2">
-                <div @click="goToProfile(like.user.id)" style="cursor: pointer;">
-                  <img :src="`${gatewayUrl}users/image?userId=${like.user.id}`" class="me-2"
-                    style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                  <strong>{{ like.user.username }}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Followers Modal -->
-      <div v-if="showFollowersModal" class="followers-modal-backdrop" @click.self="closeFollowersModal">
-        <div class="followers-modal">
-          <button class="close-modal-btn" @click="closeFollowersModal" aria-label="Close">&times;</button>
-          <div class="followers-panel">
-            <div class="followers-list" ref="followersList" @scroll="handleFollowersScroll">
-              <div class="mb-3">
-                <strong>{{ totalFollowers }} Followers</strong>
-              </div>
-              <hr>
-              <div v-for="follower in followers" :key="follower.user.id" class="like mb-2">
-                <div @click="goToProfile(follower.user.id)" style="cursor: pointer;">
-                  <img :src="`${gatewayUrl}users/image?userId=${follower.user.id}`" class="me-2"
-                    style="border-radius: 50%;width: 25px;height: 25px;" alt="post" height="30px" />
-                  <strong>{{ follower.user.fullname }}</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+<template lang="pug">
+.ig-main-layout
+  aside.ig-sidebar.ig-sidebar-left-fixed
+    LeftSidebar
+  main.ig-profile-main
+    // Profile Header
+    section.profile-header
+      img.profile-avatar(:src='`${gatewayUrl}users/image?userId=${userId}`' alt='avatar')
+      .profile-info
+        .profile-username(style='line-height: 30px;')
+          div
+            span {{ user.fullname }}
+            br
+            span.fs-6(style='font-weight: 100;') {{ user.username }}
+          div(style='display: flex;justify-content: end;align-items: flex-start; flex-basis: 400px;')
+            .btn-group
+              div(v-if='userId != useUserStore.getUserId')
+                button.btn(@click='sendFollowRequest' v-if='followStatus.status == FollowStatusEnum.NOTFOLLOWING')
+                  span.material-icons(style='vertical-align: middle; font-size: 20px; margin-right: 6px;') person_add
+                  |  Follow
+                button.btn(@click='sendFollowRequest' v-else-if='followStatus.status == FollowStatusEnum.DECLINED')
+                  span.material-icons(style='vertical-align: middle; font-size: 20px; margin-right: 6px;') person_add
+                  |  Follow
+                button.btn(@click='unfollow' v-else-if='followStatus.status == FollowStatusEnum.FOLLOWING')
+                  span.material-icons(style='vertical-align: middle; font-size: 20px; margin-right: 6px;' alt='delet') person_off
+                  |  Unfollow
+                button.btn(@click='declineFollowRequest' v-else-if='followStatus.status == FollowStatusEnum.PENDING && followStatus.respondingUserId == useUserStore.getUserId')
+                  |  Decline Request
+                button.btn(@click='cancelFollowRequest' v-if='followStatus.status == FollowStatusEnum.PENDING')
+                  |  Cancel Follow Request
+            router-link.ig-nav-link.d-block(:to="{ name: 'setting' }" style='padding-top: 5px; padding-bottom: 5px;' v-if='showSettings')
+              span.material-icons(style='margin-left: auto') settings
+        .profile-stats
+          span
+            strong {{ totalPosts }}
+            |  posts
+          span(style='cursor: pointer' @click='openFollowersModal')
+            strong {{ totalFollowers }}
+            |  followers
+        .profile-bio {{ user.bio }} 
+    hr
+    br
+    // Posts Grid
+    section.profile-posts-grid
+      .profile-post-thumb(v-for='post in posts' :key='post.id' @click='openCommentsModal(post)')
+        img(:src='post.imageUrl' alt='post')
+        .profile-post-overlay
+          span.material-icons(:style="{ color: post.likes.find(_ => _.user.id == userId) ? '#c13584' : '' }" @click.stop='likePost(post)') favorite_border
+          span.px-1(@click.stop='openLikesModal(post)') {{ post.likes.length }}
+          span.material-icons chat_bubble_outline
+          span {{ post.comments.length }}
+    div(style='text-align: center;' v-if='posts.length === 0 && (followStatus.status == FollowStatusEnum.FOLLOWING || userId == useUserStore.getUserId)')
+      |  No post found...
+    div(style='text-align: center;' v-else-if='followStatus.status == FollowStatusEnum.NOTFOLLOWING && userId != useUserStore.getUserId')
+      |  Not Following...
+    // Comments Modal
+    .comments-modal-backdrop(v-if='showCommentsModal' @click.self='closeCommentsModal')
+      .comments-modal
+        button.close-modal-btn(@click='closeCommentsModal' aria-label='Close') &times;
+        .post-image
+          img(:src='`${selectedPost.imageUrl}`' alt='post')
+        .comments-panel(v-if='selectedPost')
+          .comments-list
+            .comment(v-for='comment in selectedPost.comments' :key='comment.id')
+              span(@click='goToProfile(comment.user.id)' style='cursor: pointer;')
+                img.me-2(:src='`${gatewayUrl}users/image?userId=${comment.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
+                strong {{ comment.user.username }}
+                span {{ comment.userComment }}
+              span(style='display: block;margin-right: auto;text-align: end;font-size: small;')
+                | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
+              hr
+          .add-comment
+            input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
+            button(@click='addComment' :disabled='!newComment.trim()') Post
+    // Likes Modal
+    .likes-modal-backdrop(v-if='showLikesModal' @click.self='closeLikesModal')
+      .likes-modal
+        button.close-modal-btn(@click='closeLikesModal' aria-label='Close') &times;
+        .likes-panel(v-if='selectedPost')
+          .likes-list
+            .mb-3
+              strong {{ selectedPost.likes.length }} Likes
+            hr
+            .like.mb-2(v-for='like in selectedPost.likes' :key='like.id')
+              div(@click='goToProfile(like.user.id)' style='cursor: pointer;')
+                img.me-2(:src='`${gatewayUrl}users/image?userId=${like.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
+                strong {{ like.user.username }}
+    // Followers Modal
+    .followers-modal-backdrop(v-if='showFollowersModal' @click.self='closeFollowersModal')
+      .followers-modal
+        button.close-modal-btn(@click='closeFollowersModal' aria-label='Close') &times;
+        .followers-panel
+          .followers-list(ref='followersList' @scroll='handleFollowersScroll')
+            .mb-3
+              strong {{ totalFollowers }} Followers
+            hr
+            .like.mb-2(v-for='follower in followers' :key='follower.user.id')
+              div(@click='goToProfile(follower.user.id)' style='cursor: pointer;')
+                img.me-2(:src='`${gatewayUrl}users/image?userId=${follower.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
+                strong {{ follower.user.fullname }}
 </template>
 
 <script lang="ts">

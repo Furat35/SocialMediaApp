@@ -82,11 +82,10 @@ export default {
       this.$router.push({ name: 'profile', query: { userId: userId } });
     },
     async onSearch() {
-      console.log(this.searchQuery)
       if (this.searchQuery) {
         try {
           var search = this.searchQuery.toLowerCase()
-          const response = await this.$axios.get(`users?page=${this.userSearchListScroll.currentPage}&pageSize=10&username=${search}&fullname=${search}`)
+          const response = await this.$axios.get(`users?page=${this.userSearchListScroll.currentPage}&pageSize=10&searchkey=${search}`)
           if (response.data.data) {
             const users = response.data.data.map(u => new UserListDto(u));
             Object.assign(this.userSearchListScroll, new ScrollModel())
@@ -109,7 +108,7 @@ export default {
         this.userSearchListScroll.isLoading = true;
         try {
           var search = this.searchQuery.toLowerCase()
-          const response = await this.$axios.get(`users?page=${this.userSearchListScroll.currentPage}&pageSize=10&username=${search}&fullname=${search}`)
+          const response = await this.$axios.get(`users?page=${this.userSearchListScroll.currentPage}&pageSize=10&searchkey=${search}`)
           if (response.data.data) {
             const users = response.data.data.map(u => new UserListDto(u));
             this.userSearchList.push(...users)

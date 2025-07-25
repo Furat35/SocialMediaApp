@@ -1,57 +1,35 @@
-<template>
-    <div class="ig-main-layout" style="margin: 0;">
-        <aside class="ig-sidebar ig-sidebar-left-fixed">
-            <LeftSidebar />
-        </aside>
-        <main class="ig-feed-main mt-5">
-            <div>
-                <input name="id" hidden>
-                <div class="mb-3 row">
-                    <label for="username" class="col-sm-4 col-form-label">Username</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="username" name="username"
-                            v-model="userUpdateModel.username">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label for="fullname" class="col-sm-4 col-form-label">Fullname</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="fullname" name="fullname"
-                            v-model="userUpdateModel.fullname">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label for="bio" class="col-sm-4 col-form-label">Bio</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" id="bio" name="bio" v-model="userUpdateModel.bio">
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label for="profileImage" class="col-sm-4 form-label">Select profile image</label>
-                    <div class="col-sm-8 ">
-                        <img v-if="previewImage" :src="previewImage" alt="Selected Image Preview"
-                            style="max-width: 100px; margin-top: 10px;" />
-                        <img v-else :src="`${gatewayUrl}users/image?userId=${userId}`" alt="Selected Image Preview"
-                            style="max-width: 100px; margin-top: 10px;" />
-                        <input class="form-control mt-1" type="file" id="profileImage" name="profileImage"
-                            @change="handleFileChange" accept="image/*">
+<template lang="pug">
+    .ig-main-layout(style='margin: 0;')
+        aside.ig-sidebar.ig-sidebar-left-fixed
+            LeftSidebar
+        main.ig-feed-main.mt-5
+            div
+                input(name='id' hidden='')
+                .mb-3.row
+                    label.col-sm-4.col-form-label(for='username') Username
+                    .col-sm-8
+                        input#username.form-control(type='text' name='username' v-model='userUpdateModel.username')
+                .mb-3.row
+                    label.col-sm-4.col-form-label(for='fullname') Fullname
+                    .col-sm-8
+                        input#fullname.form-control(type='text' name='fullname' v-model='userUpdateModel.fullname')
+                .mb-3.row
+                    label.col-sm-4.col-form-label(for='bio') Bio
+                    .col-sm-8
+                        input#bio.form-control(type='text' name='bio' v-model='userUpdateModel.bio')
+                .mb-3.row
+                    label.col-sm-4.form-label(for='profileImage') Select profile image
+                    .col-sm-8
+                        img(v-if='previewImage' :src='previewImage' alt='Selected Image Preview' style='max-width: 100px; margin-top: 10px;')
+                        img(v-else='' :src='`${gatewayUrl}users/image?userId=${userId}`' alt='Selected Image Preview' style='max-width: 100px; margin-top: 10px;')
+                        input#profileImage.form-control.mt-1(type='file' name='profileImage' @change='handleFileChange' accept='image/*')
+                .mb-3.row
+                    label.col-sm-4.col-form-label(for='password') Password
+                    .col-sm-8
+                        input#password.form-control(type='password' name='password' v-model='userUpdateModel.password')
+                .col-auto(style='text-align: center;')
+                    button.btn.btn-primary.mb-3(type='submit' @click='updateUser') Update
 
-                    </div>
-                </div>
-                <div class="mb-3 row">
-                    <label for="password" class="col-sm-4 col-form-label">Password</label>
-                    <div class="col-sm-8">
-                        <input type="password" class="form-control" id="password" name="password"
-                            v-model="userUpdateModel.password">
-                    </div>
-                </div>
-
-                <div class="col-auto" style="text-align: center;">
-                    <button type="submit" class="btn btn-primary mb-3" @click="updateUser">Update</button>
-                </div>
-            </div>
-        </main>
-    </div>
 </template>
 
 <script lang="ts">

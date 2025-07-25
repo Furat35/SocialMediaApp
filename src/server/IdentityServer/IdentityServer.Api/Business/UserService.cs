@@ -8,6 +8,7 @@ using IdentityServer.Api.Data.Repository;
 using IdentityServer.Api.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System.Net;
 
 namespace IdentityServer.Api.Business
@@ -22,13 +23,11 @@ namespace IdentityServer.Api.Business
         {
             var users = Get(_ => _.IsValid);
 
-            if (request.Fullname is not null)
-                users = users.Where(_ => _.Fullname.Contains(request.Fullname) || _.Username.Contains(request.Fullname));
-            else if(request.Username is not null)
-                users = users.Where(_ => _.Fullname.Contains(request.Username) || _.Username.Contains(request.Username));
+            if (request.SearchKey is not null)
+                users = users.Where(_ => _.Fullname.Contains(request.SearchKey) || _.Username.Contains(request.SearchKey));
 
             var totalUsers = await users.CountAsync();
-            var pageCount = totalUsers / request.PageSize + (totalUsers % request.PageSize > 0 ? 1 : 0);
+            var pageCount = (int)Math.Ceiling((double)totalUsers / request.PageSize);
 
             var response = await users
                 .Skip((request.Page - 1) * request.PageSize)
@@ -36,6 +35,17 @@ namespace IdentityServer.Api.Business
                 .ToListAsync();
 
             return new PaginationResponseModel<AppUser>(request.Page, request.PageSize, pageCount, totalUsers, response);
+        }
+        public async Task<ResponseDto<List<int>>> SearchedUserIds(UserRequestDto request)
+        {
+            if (string.IsNullOrEmpty(request.SearchKey))
+                return ResponseDto<List<int>>.Fail("Search cannot be null or empty", HttpStatusCode.BadRequest);
+
+            var userIds = await Get(_ => _.IsValid && (_.Fullname.Contains(request.SearchKey) || _.Username.Contains(request.SearchKey)))
+                .Select(_ => _.Id)
+                .ToListAsync();
+
+            return ResponseDto<List<int>>.Success(userIds, HttpStatusCode.OK);
         }
 
         public async Task<ResponseDto<AppUser>> GetUserById(int userId)
