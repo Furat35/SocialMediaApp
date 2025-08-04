@@ -8,7 +8,6 @@ using IdentityServer.Api.Data.Repository;
 using IdentityServer.Api.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Net;
 
 namespace IdentityServer.Api.Business
@@ -18,7 +17,7 @@ namespace IdentityServer.Api.Business
         : UserRepository(context), IUserService
     {
         public readonly Lazy<IAuthService> _authService = new(() => serviceProvider.GetRequiredService<IAuthService>());
-      
+
         public async Task<PaginationResponseModel<AppUser>> GetUsers(UserRequestDto request)
         {
             var users = Get(_ => _.IsValid);

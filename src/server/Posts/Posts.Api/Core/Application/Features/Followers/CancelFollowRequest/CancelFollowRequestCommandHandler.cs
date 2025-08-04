@@ -1,10 +1,10 @@
-﻿using BuildingBlocks.Models;
+﻿using BuildingBlocks.Extensions;
+using BuildingBlocks.Models;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Repositories;
 using Posts.Api.Core.Domain.Enums;
 using System.Net;
-using BuildingBlocks.Extensions;
-using Microsoft.EntityFrameworkCore;
 
 namespace Posts.Api.Core.Application.Features.Followers.CancelFollowRequest
 {
@@ -12,12 +12,15 @@ namespace Posts.Api.Core.Application.Features.Followers.CancelFollowRequest
     {
         public async Task<ResponseDto<bool>> Handle(CancelFollowRequestCommand request, CancellationToken cancellationToken)
         {
-            var follow = await followerRepository.Get(_ => _.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId)
-                           .FirstOrDefaultAsync(cancellationToken);
+            var follow = await followerRepository
+                .Get(_ => _.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId && 
+                     _.Status == FollowStatus.Pending && _.IsValid)
+                .FirstOrDefaultAsync(cancellationToken);
             if (follow is null)
                 return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
 
-            followerRepository.Remove(follow);
+            follow.Status = FollowStatus.Cancelled;
+            follow.IsValid = false;
 
             return ResponseDto<bool>
                 .GenerateResponse(await followerRepository.SaveChangesAsync() > 0)

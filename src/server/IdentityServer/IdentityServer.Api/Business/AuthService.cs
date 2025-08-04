@@ -26,12 +26,12 @@ namespace IdentityServer.Api.Business
                 return ResponseDto<LoginResponseModel>.Fail("Invalid username or password!", HttpStatusCode.NotFound);
 
             var claims = new Claim[]
-           {
+            {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new(ClaimTypes.Name, user.Username),
                 new(ClaimTypes.Email, user.Email),
                 new("fullname", user.Fullname)
-           };
+            };
 
             var encodedJwt = GenerateJwtToken(claims);
             var refreshToken = GenerateRefreshToken();

@@ -14,15 +14,15 @@ namespace Posts.Api.Core.Application.Features.Followers.AcceptFollowRequest
         public async Task<ResponseDto<bool>> Handle(AcceptFollowRequestCommand request, CancellationToken cancellationToken)
         {
             var follow = await followerRepository
-                .Get(f => f.RequestingUserId == request.UserId && f.RespondingUserId == httpContext.GetUserId() && f.Status == FollowStatus.Pending)
+                .Get(f => f.RequestingUserId == request.UserId && f.RespondingUserId == httpContext.GetUserId() && 
+                    f.Status == FollowStatus.Pending && f.IsValid)
                 .FirstOrDefaultAsync();
             if (follow is null)
                 return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
 
             if (follow.Status == FollowStatus.Following)
-                return ResponseDto<bool>.Fail("Is already a Follow.", HttpStatusCode.BadRequest);
+                return ResponseDto<bool>.Fail("Is already following.", HttpStatusCode.BadRequest);
 
-            follow.IsValid = true;
             follow.Status = FollowStatus.Following;
 
             return ResponseDto<bool>

@@ -3,7 +3,7 @@
     public interface IImageService
     {
         void RemoveImage(string path);
-        Task<string> SaveImageAsync(IFormFile file, string folder = "images/users", string fileName = null);
+        Task<string> SaveImageAsync(IFormFile file, string folder, string fileName = null);
         public byte[] GetImage(string path);
     }
 }

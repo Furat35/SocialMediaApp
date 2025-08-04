@@ -15,7 +15,7 @@ aside.ig-sidebar.ig-sidebar-left
                         span.material-icons account_circle
                 router-link.ig-nav-link.d-block(:to="{ name: 'login' }")
                         span.material-icons(@click='logout') logout
-CreatePostComponent(:showpostcreatemodal='showPostCreateModal' @closemodal='closeModal')
+CreatePostComponent(:showPostCreateModal='showPostCreateModal' @closeModal='closeModal')
 
 </template>
 

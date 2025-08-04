@@ -2,7 +2,7 @@
   <!-- <div class="ig-bg"> -->
   <div class="ig-bg">
     <nav class="navbar ig-navbar">
-      <div class="ig-navbar-inner  align-items-center justify-content-between">
+      <div class="ig-navbar-inner  align-items-center justify-content-between" style="position: relative;">
         <div class="ig-navbar-section ig-navbar-left">
           <router-link :to="{ name: 'main-page' }">
             <img class="ig-logo"

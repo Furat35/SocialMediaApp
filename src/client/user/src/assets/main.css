@@ -15,7 +15,7 @@ body {
 
 .search-dropdown {
   position: absolute;
-  top: 100px;
+  top: 40px;
   left: auto;
   right: auto;
   background: #fff;
@@ -95,7 +95,7 @@ body {
   flex: 2;
   justify-content: center;
   display: flex;
-  position: relative;
+  /* position: relative; */
 }
 
 .ig-navbar-right {

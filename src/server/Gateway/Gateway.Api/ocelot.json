@@ -83,6 +83,21 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/aggregated/chats/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/aggregated/chats/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
       "ServiceName": "identityserver.api",
       "DownstreamPathTemplate": "/api/auth/{everything}",
       "DownstreamScheme": "http",

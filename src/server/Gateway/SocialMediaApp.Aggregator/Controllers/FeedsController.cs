@@ -21,7 +21,7 @@ namespace SocialMediaApp.Aggregator.Controllers
             if (!content.IsSuccessStatusCode)
                 return new ObjectResult(postsResponse) { StatusCode = (int)content.StatusCode };
 
-            if (!postsResponse.Data.Any())
+            if (postsResponse.Data is null || !postsResponse.Data .Any())
                 return Ok(postsResponse);
 
             var postUserIds = postsResponse.Data.First().UserId;

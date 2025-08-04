@@ -5,6 +5,8 @@
         Pending,
         Following,
         Declined,
-        NotFollowing
+        NotFollowing,
+        Banned,
+        Cancelled
     }
 }

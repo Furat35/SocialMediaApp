@@ -21,22 +21,26 @@
                 button.btn(@click='sendFollowRequest' v-else-if='followStatus.status == FollowStatusEnum.DECLINED')
                   span.material-icons(style='vertical-align: middle; font-size: 20px; margin-right: 6px;') person_add
                   |  Follow
-                button.btn(@click='unfollow' v-else-if='followStatus.status == FollowStatusEnum.FOLLOWING')
+                button.btn(v-else-if='followStatus.status == FollowStatusEnum.FOLLOWING' @click='unfollow' style='border: 1px solid')
                   span.material-icons(style='vertical-align: middle; font-size: 20px; margin-right: 6px;' alt='delet') person_off
                   |  Unfollow
-                button.btn(@click='declineFollowRequest' v-else-if='followStatus.status == FollowStatusEnum.PENDING && followStatus.respondingUserId == useUserStore.getUserId')
+                button.btn(v-else-if='followStatus.status == FollowStatusEnum.PENDING && followStatus.respondingUserId == useUserStore.getUserId' @click='declineFollowRequest' style='border: 1px solid')
                   |  Decline Request
-                button.btn(@click='cancelFollowRequest' v-if='followStatus.status == FollowStatusEnum.PENDING')
+                button.btn(v-if='followStatus.status == FollowStatusEnum.PENDING' @click='cancelFollowRequest' style='border: 1px solid')
                   |  Cancel Follow Request
+                button.btn(v-if='followStatus.status != FollowStatusEnum.BANNED' @click='banFollower' class='ms-1' style='border: 1px solid')
+                  |  Ban
+                button.btn(v-if='followStatus.status == FollowStatusEnum.BANNED && useUserStore.getUserId == followStatus.requestingUserId' @click='removeBan' class='ms-1' style='border: 1px solid')
+                  |  Remove Ban
+                div(v-else-if='followStatus.status == FollowStatusEnum.BANNED && useUserStore.getUserId != followStatus.requestingUserId' class='text-center fs-5')
+                  |  Banned !
             router-link.ig-nav-link.d-block(:to="{ name: 'setting' }" style='padding-top: 5px; padding-bottom: 5px;' v-if='showSettings')
               span.material-icons(style='margin-left: auto') settings
         .profile-stats
           span
-            strong {{ totalPosts }}
-            |  posts
+            strong {{ totalPosts }} posts
           span(style='cursor: pointer' @click='openFollowersModal')
-            strong {{ totalFollowers }}
-            |  followers
+            strong {{ totalFollowers }} followers
         .profile-bio {{ user.bio }} 
     hr
     br
@@ -49,6 +53,7 @@
           span.px-1(@click.stop='openLikesModal(post)') {{ post.likes.length }}
           span.material-icons chat_bubble_outline
           span {{ post.comments.length }}
+   
     div(style='text-align: center;' v-if='posts.length === 0 && (followStatus.status == FollowStatusEnum.FOLLOWING || userId == useUserStore.getUserId)')
       |  No post found...
     div(style='text-align: center;' v-else-if='followStatus.status == FollowStatusEnum.NOTFOLLOWING && userId != useUserStore.getUserId')
@@ -237,6 +242,28 @@ export default {
         }
       } catch (error) {
         toast.warning(error.response.data.errorMessages.join(', ') || 'Could not cancel follow request');
+      }
+    },
+    async banFollower() {
+      try {
+        const response = await this.$axios.post(`/followers/ban/${this.userId}`);
+        if (!response.data.isError) {
+          toast.success('Follower banned successfully!');
+          this.followStatus.status = FollowStatusEnum.BANNED;
+        }
+      } catch (error) {
+        toast.warning(error.response.data.errorMessages.join(', ') || 'Could not ban follower');
+      }
+    },
+    async removeBan() {
+      try {
+        const response = await this.$axios.post(`/followers/removeBan/${this.userId}`);
+        if (!response.data.isError) {
+          toast.success('Ban removed successfully!');
+          this.followStatus.status = FollowStatusEnum.NOTFOLLOWING;
+        }
+      } catch (error) {
+        toast.warning(error.response.data.errorMessages.join(', ') || 'Could not remove ban');
       }
     },
     async getUserInfo() {

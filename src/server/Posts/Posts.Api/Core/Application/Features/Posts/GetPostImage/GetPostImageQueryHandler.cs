@@ -1,22 +1,18 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.StaticFiles;
 using Posts.Api.Core.Application.Repositories;
-using BuildingBlocks.Extensions;
-using System.Net;
-using BuildingBlocks.Models;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostImage
 {
-    public class GetPostImageQueryHandler(IPostRepository postRepository, IFollowerRepository followerRepository,
-        IHttpContextAccessor httpContext)
+    public class GetPostImageQueryHandler(IPostRepository postRepository, IFollowerRepository followerRepository)
         : IRequestHandler<GetPostImageQuery, (byte[] image, string fileType)>
     {
         public async Task<(byte[] image, string fileType)> Handle(GetPostImageQuery request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId);
-            if(post is not null && await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
+            if (post is not null && !await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
             {
-                    throw new BadHttpRequestException("You do not have permission to access this user's posts.");
+                throw new BadHttpRequestException("You do not have permission to access this user's posts.");
             }
 
             if (!File.Exists(post.ImagePath))

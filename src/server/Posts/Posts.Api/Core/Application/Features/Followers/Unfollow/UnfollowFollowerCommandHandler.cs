@@ -21,7 +21,7 @@ namespace Posts.Api.Core.Application.Features.Followers.Unfollow
             if (follower is null)
                 return ResponseDto<bool>.Fail("Follow does not exist.", HttpStatusCode.BadRequest);
 
-            followerRepository.Remove(follower);
+            follower.IsValid = false;
             return ResponseDto<bool>
               .GenerateResponse(await followerRepository.SaveChangesAsync() > 0)
               .Success(true, HttpStatusCode.OK)

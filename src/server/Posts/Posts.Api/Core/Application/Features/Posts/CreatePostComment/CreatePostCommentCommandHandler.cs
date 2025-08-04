@@ -4,7 +4,6 @@ using BuildingBlocks.Models;
 using MediatR;
 using Posts.Api.Core.Application.Repositories;
 using Posts.Api.Core.Domain.Entities;
-using Posts.Api.Infrastructure.Repositories;
 using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.CreatePostComment
@@ -17,10 +16,8 @@ namespace Posts.Api.Core.Application.Features.Posts.CreatePostComment
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Comments]);
             if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
-            if (await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
-            {
+            if (!await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
                 return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
-            }
 
             var comment = mapper.Map<Comment>(request);
             comment.UserId = httpContext.GetUserId();

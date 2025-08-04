@@ -3,18 +3,22 @@ div(style='display: flex; margin-top: 40px;')
     .ig-sidebar.ig-sidebar-left-fixed(style='width: 80px;')
         LeftSidebar
     .ig-messages-container
-        aside.ig-messages-sidebar(@scroll='handleFollowerChatsScroll' ref='followerChatsList')
-            .ig-messages-sidebar-header.row(style='position: relative;width: 100%;')
+        aside.ig-messages-sidebar(@scroll='handleChatsScroll' ref='followerChatsList')
+            .ig-messages-sidebar-header.row.mx-0(style='position: relative;width: 100%;')
                 span Chats
                 input.form-control.ig-search(type='search' placeholder='Search' aria-label='Search' v-model='searchQuery' @focus='onFocus' @input='onSearch' autocomplete='off')
-            div(v-if='showDropdown && followerSearchList.length' v-for='follower in followerSearchList' :key='follower.user.id' :class="['ig-messages-user', { active: selectedUser && selectedUser.id === follower.user.id }]" @click='selectUser(follower.user)' ref='followerSearchList')
-                img.ig-messages-user-avatar(:src='`${gatewayUrl}users/image?userId=${follower.user.id}`')
-                span.ig-messages-user-name {{ follower.user.fullname }}
-            .mt-3.text-center(v-else-if='showDropdown && !followerSearchList.length && searchQuery') No users found
-            div(v-else='' v-for='follower in followerChats' :key='follower.id' :class="['ig-messages-user', { active: selectedUser && selectedUser.id === follower.id }]" @click='selectUser(follower)')
-                img.ig-messages-user-avatar(:src='`${gatewayUrl}users/image?userId=${follower.id}`')
-                span.ig-messages-user-name {{ follower.fullname }}
-                // <span class="ms-auto text-danger" :ref="follower.id.toString()">+1</span>
+            div(v-if='showDropdown && chatsSearchList.length' v-for='chat in chatsSearchList' :key='chat.user.id' 
+                :class="['ig-messages-user', { active: selectedUser && selectedUser.id === chat.user.id }]" @click='selectUser(chat.user)' ref='chatsSearchList')
+                img.ig-messages-user-avatar(:src='`${gatewayUrl}users/image?userId=${chat.user.id}`')
+                span.ig-messages-user-name {{ chat.user.fullname }}
+                span.ms-auto.text-danger(v-if='!chat.isRead') +1
+            .mt-3.text-center(v-else-if='showDropdown && !chatsSearchList.length && searchQuery') No users found
+            div(v-else v-for='chat in chats' :key='chat.user.id' :class="['ig-messages-user', { active: selectedUser && selectedUser.id === chat.user.id }]" @click='selectUser(chat.user)')
+                img.ig-messages-user-avatar(:src='`${gatewayUrl}users/image?userId=${chat.user.id}`')
+                span.ig-messages-user-name {{ chat.user.fullname }}
+                //- span.ms-auto.text-danger(:ref='chat.user.id.toString()' v-if='hasUnreadMessages(chat.user.id)') +1
+                span.ms-auto.text-danger(v-if='!chat.isRead') +1
+
             // Chat Area
         section.ig-messages-chat(v-if='selectedUser')
             .ig-messages-chat-header
@@ -51,23 +55,24 @@ export default {
     data() {
         return {
             name: 'MessagePage',
-            followerChats: [] as UserListDto[],
             selectedUser: null as UserListDto,
-            chatScrollModel: new ScrollModel(),
-            followerChatScrollModel: new ScrollModel(),
-            followerScrollModel: new ScrollModel(),
-            gatewayUrl: import.meta.env.VITE_GatewayUrl,
-            newMessage: '',
             chatHistory: [] as ChatListDto[],
+            chatHistoryScrollModel: new ScrollModel(),
+            chats: [] as ChatListDto[],
+            chatsScrollModel: new ScrollModel(),
             followerSearchScroll: new ScrollModel(),
-            followerSearchList: [] as FollowerListModel[],
+            chatsSearchList: [] as ChatListDto[],
             searchQuery: "",
+            newMessage: '',
             showDropdown: false,
-            connection: useSignalRConnection()
+            connection: useSignalRConnection(),
+            userId: useUserStore().getUserId,
+            gatewayUrl: import.meta.env.VITE_GatewayUrl,
+            lastLoadTime: 0
         }
     },
     created() {
-        this.getFollowerChats()
+        this.getChats()
     },
     async mounted() {
         this.startSignalRConnection()
@@ -82,40 +87,57 @@ export default {
         handleChatScroll() {
             const el = this.$refs.chatBody as HTMLElement;
             if (!el) return;
-            if (el.scrollTop < 250 && this.chatScrollModel.hasMore && !this.chatScrollModel.isLoading)
-                this.getChatHistory(this.selectedUser.id);
+            const now = performance.now();
+            if (now - this.lastLoadTime > 500 && el.scrollTop < 250 && this.chatHistoryScrollModel.hasMore && !this.chatHistoryScrollModel.isLoading) {
+                this.lastLoadTime = now;
+                const prevHeight = el.scrollHeight;
+                const prevTop = el.scrollTop;
+                this.getChatHistory(this.selectedUser.id).then(() => {
+                    this.$nextTick(() => {
+                        const newHeight = el.scrollHeight;
+                        const added = newHeight - prevHeight;
+                        el.scrollTop = prevTop + added;
+                    });
+                });
+            }
         },
-        handleFollowerChatsScroll() {
+        handleChatsScroll() {
+            const el = this.$refs.followerChatsList as HTMLElement;
+            if (!el) return;
+            const threshold = 200;
             if (this.showDropdown) {
-                const el = this.$refs.followerChatsList as HTMLElement;
-                if (!el) return;
-                const threshold = 200;
-                console.log(el.scrollTop)
                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold && this.followerSearchScroll.hasMore && !this.followerSearchScroll.isLoading) {
-                    this.getFollowers();
+                    this.searchFollower();
                 }
             }
             else {
-                const el = this.$refs.followerChatsList as HTMLElement;
-                if (!el) return;
-                const threshold = 200;
-                if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold && this.followerChatScrollModel.hasMore && !this.followerChatScrollModel.isLoading)
-                    this.getFollowerChats();
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold && this.chatsScrollModel.hasMore && !this.chatsScrollModel.isLoading)
+                    this.getChats();
             }
-
         },
         async startSignalRConnection() {
             this.connection.on("ReceiveMessage", (receivedMessage) => {
-                const el = this.$refs[receivedMessage.from][0] as HTMLElement;
-                if (el) {
+                // console.log(receivedMessage)
+                // const el = this.$refs[receivedMessage.from][0] as HTMLElement;
+                console.log(receivedMessage);
+                if (this.selectedUser && this.selectedUser.id == receivedMessage.from) {
                     this.chatHistory.push({
                         to: receivedMessage.to,
                         from: receivedMessage.from,
                         userMessage: receivedMessage.userMessage,
                         sentDate: new Date(receivedMessage.sentDate),
+                        isRead: true
                     })
                 }
-                else this.getFollowerChats()
+                else if (this.chats.find(c => c.user.id === receivedMessage.from)) {
+                    const chat = this.chats.find(c => c.user.id === receivedMessage.from);
+                    if (chat) {
+                        // chat.lastMessage = receivedMessage.userMessage;
+                        // chat.sentDate = new Date(receivedMessage.sentDate);
+                        chat.isRead = false;
+                    }
+                }
+                else this.getChats()
 
                 console.log("Message from server:", receivedMessage.from, receivedMessage);
             });
@@ -126,45 +148,53 @@ export default {
                 console.error("SignalR connection error:", err);
             }
         },
-        async getFollowerChats() {
-            if (this.followerChatScrollModel.isLoading) return;
-            this.followerChatScrollModel.isLoading = true;
+        async getChats() {
+            if (this.chatsScrollModel.isLoading) return;
+            this.chatsScrollModel.isLoading = true;
             try {
-                var response = await this.$axios.get(`/aggregated/chats?page=${this.followerChatScrollModel.currentPage}&pageSize=25`)
-                const newfollowerChats = response.data.data.map(u => new UserListDto(u))
-                this.followerChats.push(...newfollowerChats);
-                // this.getUnreadMessages(newfollowerChats.map(f => f.id));
-                if (!response.data.hasNext) this.followerChatScrollModel.hasMore = false;
-                else this.followerChatScrollModel.currentPage++;
+                var response = await this.$axios.get(`/aggregated/chats?page=${this.chatsScrollModel.currentPage}&pageSize=25`)
+                const newChats = response.data.data.map(u => new ChatListDto(u))
+                this.chats.push(...newChats);
+                if (!response.data.hasNext) this.chatsScrollModel.hasMore = false;
+                else this.chatsScrollModel.currentPage++;
             }
             finally {
-                this.followerChatScrollModel.isLoading = false;
+                this.chatsScrollModel.isLoading = false;
             }
         },
         async getChatHistory(userId: number) {
-            if (this.chatScrollModel.isLoading) return;
-            this.chatScrollModel.isLoading = true;
+            console.log("tets")
+            console.log(this.chatHistoryScrollModel);
+            if (this.chatHistoryScrollModel.isLoading) return;
+            this.chatHistoryScrollModel.isLoading = true;
+            let messages = [] as ChatListDto[];
             try {
-                var response = await this.$axios.get(`/chats/${userId}?page=${this.chatScrollModel.currentPage}&pageSize=25`)
-                const messages = response.data.data.map(f => new ChatListDto(f)) as ChatListDto[]
+                var response = await this.$axios.get(`/chats/${userId}?page=${this.chatHistoryScrollModel.currentPage}&pageSize=25`)
+                messages = response.data.data.map(f => new ChatListDto(f)) as ChatListDto[]
                 this.chatHistory.unshift(...messages.reverse());
-                if (!response.data.hasNext) this.chatScrollModel.hasMore = false;
-                else this.chatScrollModel.currentPage++;
-
-                return messages;
+                if (!response.data.hasNext) this.chatHistoryScrollModel.hasMore = false;
+                else this.chatHistoryScrollModel.currentPage++;
             }
             finally {
-                this.chatScrollModel.isLoading = false;
+                this.chatHistoryScrollModel.isLoading = false;
             }
+            return messages;
         },
         async selectUser(user: UserListDto) {
             this.selectedUser = user;
             this.chatHistory = [] as UserListDto[]
-            Object.assign(this.chatScrollModel, new ScrollModel())
+            Object.assign(this.chatHistoryScrollModel, new ScrollModel())
+            await this.setMessagesAsRead(this.selectedUser.id);
             await this.getChatHistory(this.selectedUser.id)
             this.$nextTick(() => {
                 this.scrollToBottom();
             });
+        },
+        async setMessagesAsRead(userId: number) {
+            await this.$axios.post(`/chats/set-read?userId=${userId}`)
+            this.chats.find(c => c.user.id == userId).isRead = true;
+            if (this.chatsSearchList.length > 0)
+                this.chatsSearchList.find(c => c.user.id == userId).isRead = true;
         },
         sendMessage() {
             if (!this.selectedUser || !this.newMessage.trim()) return;
@@ -180,16 +210,15 @@ export default {
                 this.scrollToBottom();
             });
         },
-        async getFollowers() {
+        async searchFollower() {
             if (this.searchQuery) {
                 if (this.followerSearchScroll.isLoading) return;
                 this.followerSearchScroll.isLoading = true;
                 try {
                     var search = this.searchQuery.toLowerCase()
-                    var response = await this.$axios.get(`/aggregated/followers/search?searchkey=${search}&page=${this.followerSearchScroll.currentPage}&pageSize=25`)
-                    const followers = response.data.data.map(u => new FollowerListModel(u));
-                    this.followerSearchList.push(...followers)
-                    // this.getUnreadMessages(followers.map(f => f.user.id));
+                    var response = await this.$axios.post(`/aggregated/chats/lastChats-byUserIds?searchkey=${search}&page=${this.followerSearchScroll.currentPage}&pageSize=25`)
+                    const followers = response.data.data.map(u => new ChatListDto(u));
+                    this.chatsSearchList.push(...followers)
                     if (!response.data.hasNext) this.followerSearchScroll.hasMore = false;
                     else this.followerSearchScroll.currentPage++;
                 }
@@ -198,35 +227,31 @@ export default {
                 }
             }
         },
-        // async getUnreadMessages(userIds: number[]) {
-        //     var response = await this.$axios.post(`/chats/get-unread-messages`, userIds)
-        //     // console.log("Unread messages response:", response.data);
-        // },
         closeModal() {
             this.showModal.value = false;
             this.searchQuery.value = '';
-            this.followerSearchList.value = [];
+            this.chatsSearchList.value = [];
         },
         async onSearch() {
             if (this.searchQuery) {
                 if (this.followerSearchScroll.isLoading) return;
                 Object.assign(this.followerSearchScroll, new ScrollModel())
                 this.followerSearchScroll.isLoading = true;
-                this.followerSearchList = [];
-                var response = await this.$axios.get(`/aggregated/followers/search?searchkey=${this.searchQuery.toLowerCase()}&page=${this.followerSearchScroll.currentPage}&pageSize=20`)
-                const users = response.data.data.map(u => new UserListDto(u));
-                this.followerSearchList.push(...users)
+                var response = await this.$axios.post(`/aggregated/chats/lastChats-byUserIds?searchkey=${this.searchQuery.toLowerCase()}&page=${this.followerSearchScroll.currentPage}&pageSize=20`)
+                this.chatsSearchList = [];
+                const users = response.data.data.map(u => new ChatListDto(u));
+                this.chatsSearchList.push(...users)
                 if (!response.data.hasNext) this.followerSearchScroll.hasMore = false;
                 else this.followerSearchScroll.currentPage++;
                 this.followerSearchScroll.isLoading = false;
                 this.showDropdown = true;
             } else {
-                this.followerSearchList = [];
+                this.chatsSearchList = [];
                 this.showDropdown = false;
             }
         },
         onFocus() {
-            if (this.followerSearchList.length) {
+            if (this.chatsSearchList.length) {
                 this.showDropdown = true;
             }
         },

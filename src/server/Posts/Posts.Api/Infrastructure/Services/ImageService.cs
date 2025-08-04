@@ -11,7 +11,7 @@ namespace Posts.Api.Infrastructure.Services
             File.Delete(path);
         }
 
-        public async Task<string> SaveImageAsync(IFormFile file, string folder = "images/users", string fileName = null)
+        public async Task<string> SaveImageAsync(IFormFile file, string folder, string fileName = null)
         {
             if (file == null || file.Length == 0)
                 throw new Exception("No file uploaded");

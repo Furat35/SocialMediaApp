@@ -3,4 +3,5 @@ export enum FollowStatusEnum {
   FOLLOWING = 1,
   DECLINED = 2,
   NOTFOLLOWING = 3,
+  BANNED = 4,
 }

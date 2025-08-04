@@ -36,12 +36,6 @@ export default {
     created() {
         this.getFollowerRequests();
     },
-    mounted() {
-        window.addEventListener('scroll', this.handleFollowersScroll);
-    },
-    beforeUnmount() {
-        window.removeEventListener('scroll', this.handleFollowersScroll);
-    },
     methods: {
         goToProfile(newUserId: number) {
             this.$router.push({ name: 'profile', query: { userId: newUserId } });

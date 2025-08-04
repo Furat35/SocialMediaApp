@@ -1,5 +1,4 @@
-﻿using BuildingBlocks.Models;
-using MediatR;
+﻿using MediatR;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostImage
 {

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using BuildingBlocks.Models;
+﻿using BuildingBlocks.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Followers;
@@ -13,7 +12,9 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId
         public async Task<PaginationResponseModel<FollowerListDto>> Handle(GetFollowersByUserIdQuery request, CancellationToken cancellationToken)
         {
             var followers = followerRepository
-               .Get(_ => (_.RequestingUserId == request.UserId || _.RespondingUserId == request.UserId) && _.Status == request.Status)
+               .Get(_ => (_.RequestingUserId == request.UserId || _.RespondingUserId == request.UserId) &&
+                    _.Status == request.Status && _.IsValid)
+               .OrderByDescending(_ => _.CreateDate)
                .Select(_ => new FollowerListDto
                {
                    Id = _.Id,

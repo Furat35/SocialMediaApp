@@ -15,25 +15,27 @@ namespace Posts.Api.Core.Application.Features.Followers.GetFollowStatus
         public async Task<ResponseDto<FollowerListDto>> Handle(GetFollowStatusQuery request, CancellationToken cancellationToken)
         {
             var follower = await followerRepository
-              .Get(_ => (_.RequestingUserId == request.UserId && _.RespondingUserId == httpContext.GetUserId()) ||
-                    (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId))
+              .Get(_ => ((_.RequestingUserId == request.UserId && _.RespondingUserId == httpContext.GetUserId()) ||
+                    (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId)) &&
+                     _.IsValid)
+              .OrderByDescending(_ => _.CreateDate)
               .Select(_ => new FollowerListDto
-                  {
-                      Id = _.Id,
-                      RequestingUserId = _.RequestingUserId,
-                      RespondingUserId = _.RespondingUserId,
-                      Status = _.Status,
-                      CreateDate = _.CreateDate
-                  }).FirstOrDefaultAsync();
-            if (follower is null)
-                follower = new FollowerListDto
-                {
-                    Id = null,
-                    RequestingUserId = null,
-                    RespondingUserId = null,
-                    Status = FollowStatus.NotFollowing,
-                    CreateDate = null
-                };
+              {
+                  Id = _.Id,
+                  RequestingUserId = _.RequestingUserId,
+                  RespondingUserId = _.RespondingUserId,
+                  Status = _.Status,
+                  CreateDate = _.CreateDate
+              }).FirstOrDefaultAsync();
+
+            follower ??= new FollowerListDto
+            {
+                Id = null,
+                RequestingUserId = null,
+                RespondingUserId = null,
+                Status = FollowStatus.NotFollowing,
+                CreateDate = null
+            };
 
             return ResponseDto<FollowerListDto>.Success(follower, HttpStatusCode.OK);
 

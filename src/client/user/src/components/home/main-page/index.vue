@@ -5,13 +5,9 @@
         LeftSidebar
     main.ig-feed-main
         // Stories
-        //
-            <div class="ig-stories-bar">
-            <div class="story-circle ig-story" v-for="(story, index) in stories" :key="index">
-            <img :src="story.image" alt="story" />
-            </div>
-            </div>
         // Feed
+        
+        StoryComponent 
         div
             .post-card.ig-post(v-for='(post, index) in posts' :key='index')
                 .post-header.ig-post-header
@@ -44,10 +40,10 @@
                         .comment(v-for='comment in selectedPost.comments' :key='comment.id')
                             span(@click='goToProfile(comment.user.id)' style='cursor: pointer;')
                                 img.me-2(:src='`${gatewayUrl}users/image?userId=${comment.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
-                                strong {{ comment.user.username }}
+                                strong {{ comment.user.username }} {{ ' ' }}
                                 span {{ comment.userComment }}
                             span(style='display: block;margin-right: auto;text-align: end;font-size: small;')
-                            | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
+                                | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
                             hr
                     .add-comment
                         input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
@@ -71,6 +67,7 @@
 <script lang="ts">
 import LeftSidebar from '@user/src/components/shared/left-sidebar.vue';
 import FollowerSuggestions from '@user/src/components/shared/follower-suggestions.vue';
+import StoryComponent from '@user/src/components/home/stories/index.vue';
 import { PostListDto } from '@user/src/models/posts/PostListDto';
 import { PaginationModel } from '@shared/models/PaginationModel';
 import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
@@ -81,10 +78,12 @@ import { UserListDto } from '@shared/models/users/UserListDto';
 import { ScrollModel } from '@shared/models/ScrollModel';
 import { toast } from '@user/src/helpers/toast';
 
+
 export default {
     components: {
         LeftSidebar,
-        FollowerSuggestions
+        FollowerSuggestions,
+        StoryComponent
     },
     name: 'InstagramClone',
     created() {
@@ -92,13 +91,6 @@ export default {
     },
     data() {
         return {
-            // stories: [
-            //     { image: 'https://randomuser.me/api/portraits/women/1.jpg' },
-            //     { image: 'https://randomuser.me/api/portraits/men/2.jpg' },
-            //     { image: 'https://randomuser.me/api/portraits/women/3.jpg' },
-            //     { image: 'https://randomuser.me/api/portraits/men/4.jpg' },
-            //     { image: 'https://randomuser.me/api/portraits/women/5.jpg' }
-            // ],
             posts: [] as PostListDto[],
             followers: new PaginationModel<FollowerListModel>(),
             postScrollModel: new ScrollModel(),
@@ -124,9 +116,7 @@ export default {
             const scrollBottom = window.innerHeight + window.scrollY;
             const threshold = document.body.offsetHeight - 600;
 
-            if (scrollBottom >= threshold && this.postScrollModel.hasMore) {
-                this.getPosts();
-            }
+            if (scrollBottom >= threshold && this.postScrollModel.hasMore) this.getPosts();
         },
         async addComment() {
             if (!this.newComment.trim() || !this.selectedPost) return;
@@ -185,7 +175,7 @@ export default {
             this.postScrollModel.isLoading = true;
 
             try {
-                var response = await this.$axios.get(`/aggregated/feeds?page=${this.postScrollModel.currentPage}&pageSize=5`)
+                var response = await this.$axios.get(`/aggregated/feeds?page=${this.postScrollModel.currentPage}&pageSize=10`)
                 if (response.data.data) {
                     const rawPosts = response.data.data as PostListDto[];
                     const newPosts = rawPosts.map(p => new PostListDto(p))

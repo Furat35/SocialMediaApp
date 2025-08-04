@@ -9,7 +9,6 @@ namespace Posts.Api.Core.Domain.Entities
         public int RequestingUserId { get; set; }
         public int RespondingUserId { get; set; }
         public FollowStatus Status { get; set; }
-        [NotMapped]
         public override bool IsValid { get; set; }
     }
 }

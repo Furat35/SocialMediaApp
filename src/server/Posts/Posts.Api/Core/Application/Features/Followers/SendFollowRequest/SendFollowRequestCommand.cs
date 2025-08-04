@@ -1,7 +1,7 @@
 ﻿using BuildingBlocks.Models;
 using MediatR;
 
-namespace Posts.Api.Core.Application.Features.Followers.SendFollowRequestFriend
+namespace Posts.Api.Core.Application.Features.Followers.SendFollowRequest
 {
     public class SendFollowRequestCommand : IRequest<ResponseDto<bool>>
     {
