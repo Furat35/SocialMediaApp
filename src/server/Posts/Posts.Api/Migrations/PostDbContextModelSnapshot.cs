@@ -154,6 +154,35 @@ namespace Posts.Api.Migrations
                     b.ToTable("Posts");
                 });
 
+            modelBuilder.Entity("Posts.Api.Core.Domain.Entities.Story", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ModifyDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Stories");
+                });
+
             modelBuilder.Entity("Posts.Api.Core.Domain.Entities.Comment", b =>
                 {
                     b.HasOne("Posts.Api.Core.Domain.Entities.Post", "Post")

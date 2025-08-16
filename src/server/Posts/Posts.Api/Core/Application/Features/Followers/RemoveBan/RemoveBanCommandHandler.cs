@@ -1,20 +1,20 @@
-﻿using MediatR;
+﻿using BuildingBlocks.Extensions;
+using BuildingBlocks.Models;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Repositories;
 using Posts.Api.Core.Domain.Enums;
-using BuildingBlocks.Extensions;
-using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Models;
 using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Followers.RemoveBan
 {
-    public class RemoveBanCommandHandler(IFollowerRepository followerRepository, IHttpContextAccessor httpContext) 
+    public class RemoveBanCommandHandler(IFollowerRepository followerRepository, IHttpContextAccessor httpContext)
         : IRequestHandler<RemoveBanCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(RemoveBanCommand request, CancellationToken cancellationToken)
         {
             var follower = await followerRepository
-              .Get(_ => (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId) 
+              .Get(_ => (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == request.UserId)
                     && _.IsValid && _.Status == FollowStatus.Banned)
               .FirstOrDefaultAsync();
 

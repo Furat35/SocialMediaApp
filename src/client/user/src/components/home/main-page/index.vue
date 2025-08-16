@@ -4,10 +4,7 @@
     aside.ig-sidebar.ig-sidebar-left-fixed
         LeftSidebar
     main.ig-feed-main
-        // Stories
-        // Feed
-        
-        StoryComponent 
+        StoryBarComponent 
         div
             .post-card.ig-post(v-for='(post, index) in posts' :key='index')
                 .post-header.ig-post-header
@@ -30,36 +27,9 @@
                         span.ig-action(@click='openCommentsModal(post)') View all {{ post.comments.length }} comments
                     .text-muted.small.mt-1 {{ post.createDate.toLocaleDateString(&apos;en-En&apos;) }}
             .mb-4.mt-5(v-show='!postScrollModel.hasMore' style='text-align: center') Couldn't find anymore posts...
-        .comments-modal-backdrop(v-if='showCommentsModal' @click.self='closeCommentsModal')
-            .comments-modal
-                button.close-modal-btn(@click='closeCommentsModal' aria-label='Close') &times;
-                .post-image
-                    img(:src='`${selectedPost.imageUrl}`' alt='post')
-                .comments-panel(v-if='selectedPost')
-                    .comments-list
-                        .comment(v-for='comment in selectedPost.comments' :key='comment.id')
-                            span(@click='goToProfile(comment.user.id)' style='cursor: pointer;')
-                                img.me-2(:src='`${gatewayUrl}users/image?userId=${comment.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
-                                strong {{ comment.user.username }} {{ ' ' }}
-                                span {{ comment.userComment }}
-                            span(style='display: block;margin-right: auto;text-align: end;font-size: small;')
-                                | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
-                            hr
-                    .add-comment
-                        input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
-                        button(@click='addComment' :disabled='!newComment.trim()') Post
-        .likes-modal-backdrop(v-if='showLikesModal' @click.self='closeLikesModal')
-            .likes-modal
-                button.close-modal-btn(@click='closeLikesModal' aria-label='Close') &times;
-                .likes-panel(v-if='selectedPost')
-                    .likes-list
-                        .mb-3
-                            strong {{ selectedPost.likes.length }} Likes
-                        hr
-                        .like.mb-2(v-for='like in selectedPost.likes' :key='like.id')
-                            div(@click='goToProfile(like.user.id)' style='cursor: pointer;')
-                                img.me-2(:src='`${gatewayUrl}users/image?userId=${like.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
-                                strong {{ like.user.username }}
+        CommentModal(:selectedPost='selectedPost' v-if='showCommentsModal' @close='showCommentsModal = false')
+        LikesModal(:selectedPost='selectedPost' v-if='showLikesModal' @close='showLikesModal = false')
+
     FollowerSuggestions
 
 </template>
@@ -67,25 +37,27 @@
 <script lang="ts">
 import LeftSidebar from '@user/src/components/shared/left-sidebar.vue';
 import FollowerSuggestions from '@user/src/components/shared/follower-suggestions.vue';
-import StoryComponent from '@user/src/components/home/stories/index.vue';
+import StoryBarComponent from '@user/src/components/home/stories/story-bar.vue';
 import { PostListDto } from '@user/src/models/posts/PostListDto';
 import { PaginationModel } from '@shared/models/PaginationModel';
 import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
 import { useUserStore } from '@user/src/helpers/store';
 import { PostLikeListDto } from '@user/src/models/posts/PostLikeListDto';
-import { PostCommentListDto } from '@user/src/models/posts/PostCommentListDto';
 import { UserListDto } from '@shared/models/users/UserListDto';
 import { ScrollModel } from '@shared/models/ScrollModel';
 import { toast } from '@user/src/helpers/toast';
-
+import CommentModal from '../posts/comment-modal.vue';
+import LikesModal from '../posts/likes-modal.vue';
 
 export default {
+    name: 'MainPage',
     components: {
         LeftSidebar,
         FollowerSuggestions,
-        StoryComponent
+        StoryBarComponent,
+        CommentModal,
+        LikesModal
     },
-    name: 'InstagramClone',
     created() {
         this.getPosts();
     },
@@ -98,7 +70,6 @@ export default {
             showCommentsModal: false,
             showLikesModal: false,
             selectedPost: null as PostListDto | null,
-            newComment: '',
             gatewayUrl: import.meta.env.VITE_GatewayUrl
         }
     },
@@ -118,37 +89,13 @@ export default {
 
             if (scrollBottom >= threshold && this.postScrollModel.hasMore) this.getPosts();
         },
-        async addComment() {
-            if (!this.newComment.trim() || !this.selectedPost) return;
-            try {
-                var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
-                if (!response.data.isError) {
-                    this.selectedPost.comments.push(new PostCommentListDto({
-                        postId: this.selectedPost.id,
-                        userComment: this.newComment, createDate: new Date(), user: new UserListDto({ username: useUserStore().getUsername, id: useUserStore().getUserId })
-                    }))
-                    this.newComment = '';
-                }
-            } catch (error) {
-                toast.warning(error.response.data.errorMessages.join(', ') || 'Could not add comment');
-            }
-
-        },
         openCommentsModal(post: PostListDto) {
             this.selectedPost = post;
             this.showCommentsModal = true;
         },
-        closeCommentsModal() {
-            this.showCommentsModal = false;
-            this.selectedPost = null;
-        },
         openLikesModal(post: PostListDto) {
             this.selectedPost = post;
             this.showLikesModal = true;
-        },
-        closeLikesModal() {
-            this.showLikesModal = false;
-            this.selectedPost = null;
         },
         async likePost(post: PostListDto) {
             if (post.likes.find(_ => _.user.id == this.userId)) {

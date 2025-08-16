@@ -16,7 +16,7 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostById
             var post = await postRepository.GetByIdAsync(request.Id, includes: [i => i.Likes, i => i.Comments]);
             if (post == null) return ResponseDto<PostListDto>.Fail("Post not found", HttpStatusCode.NotFound);
 
-            if (!await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
+            if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
                 return ResponseDto<PostListDto>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
 
             var mappedPost = mapper.Map<PostListDto>(post);

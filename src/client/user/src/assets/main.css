@@ -433,7 +433,17 @@ body {
   object-fit: cover;
   border: 2px solid #dbdbdb;
 }
-
+.profile-avatar-story-border {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
 .profile-info {
   flex: 1;
   display: flex;

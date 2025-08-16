@@ -10,7 +10,7 @@ namespace BuildingBlocks.Data
         IQueryable<TEntity> GetAll();
         Task<TEntity> GetById(int id);
         Task<TEntity> GetByIdAsync(int id, params Expression<Func<TEntity, object>>[] includes);
-        Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> expression, params Expression<Func<TEntity, object>>[] includes);
+        Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> expression, params Expression<Func<TEntity, object>>[] includes);
         TEntity Update(TEntity entity);
         TEntity Remove(TEntity entity);
         int SaveChanges();

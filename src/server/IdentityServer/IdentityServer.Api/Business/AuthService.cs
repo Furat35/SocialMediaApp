@@ -16,7 +16,7 @@ namespace IdentityServer.Api.Business
         public const int UserId = 4;
         public async Task<ResponseDto<LoginResponseModel>> LoginAsync(LoginRequestModel loginRequest)
         {
-            var user = await userService.GetSingleAsync(_ => _.Username == loginRequest.Username);
+            var user = await userService.GetFirstAsync(_ => _.Username == loginRequest.Username);
             if (user is null)
                 return ResponseDto<LoginResponseModel>.Fail("Invalid username or password!", HttpStatusCode.NotFound);
 
@@ -52,7 +52,7 @@ namespace IdentityServer.Api.Business
 
         public async Task<ResponseDto<bool>> RegisterAsync(RegisterRequestModel registerModel)
         {
-            var userExists = await userService.GetSingleAsync(u => u.Username == registerModel.UserName);
+            var userExists = await userService.GetFirstAsync(u => u.Username == registerModel.UserName);
             if (userExists is not null)
                 return ResponseDto<bool>.Fail("User already exists!", HttpStatusCode.BadRequest);
 
@@ -82,7 +82,7 @@ namespace IdentityServer.Api.Business
             if (userId is null)
                 return ResponseDto<LoginResponseModel>.Fail("User not found!", HttpStatusCode.BadRequest);
 
-            var user = await userService.GetSingleAsync(x => x.Id == int.Parse(userId) && x.RefreshToken == request.RefreshToken);
+            var user = await userService.GetFirstAsync(x => x.Id == int.Parse(userId) && x.RefreshToken == request.RefreshToken);
 
             if (user is null || user.RefreshTokenExpiry < DateTime.UtcNow)
                 return ResponseDto<LoginResponseModel>.Fail("Expired Token!", HttpStatusCode.BadRequest);

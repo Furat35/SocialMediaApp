@@ -39,6 +39,7 @@ import { useUserStore } from '@user/src/helpers/store';
 import { toast } from '@user/src/helpers/toast';
 
 export default {
+    name: 'SettingsComponent',
     components: {
         LeftSidebar
     },

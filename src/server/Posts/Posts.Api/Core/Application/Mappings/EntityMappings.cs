@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Posts.Api.Core.Application.Dtos.Posts;
+using Posts.Api.Core.Application.Dtos.Stories;
 using Posts.Api.Core.Application.Features.Posts.CreatePost;
 using Posts.Api.Core.Application.Features.Posts.CreatePostComment;
 using Posts.Api.Core.Domain.Entities;
@@ -17,6 +18,8 @@ namespace Posts.Api.Core.Application.Mappings
 
             CreateMap<Like, LikeListDto>();
             CreateMap<Comment, CommentListDto>();
+        
+            CreateMap<Story, StoryListDto>();
         }
     }
 }

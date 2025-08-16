@@ -1,6 +1,5 @@
 ﻿using BuildingBlocks.Models;
 using Posts.Api.Core.Domain.Enums;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Posts.Api.Core.Domain.Entities
 {

@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using BuildingBlocks.Extensions;
+﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
 using Chat.SignalR.Data.Contexts;
 using Chat.SignalR.Models;

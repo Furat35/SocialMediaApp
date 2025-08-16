@@ -21,6 +21,7 @@ namespace Posts.Api.Extensions
             services.AddHttpContextAccessor();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<IFollowerRepository, FollowerRepository>();
+            services.AddScoped<IStoryRepository, StoryRepository>();
             services.AddScoped<IImageService, ImageService>();
             services.ConfigureAuthentication(configuration);
 

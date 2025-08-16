@@ -64,7 +64,7 @@ namespace BuildingBlocks.Data
             return await query.FirstOrDefaultAsync(i => i.Id == id);
         }
 
-        public virtual async Task<TEntity> GetSingleAsync(Expression<Func<TEntity, bool>> expression, params Expression<Func<TEntity, object>>[] includes)
+        public virtual async Task<TEntity> GetFirstAsync(Expression<Func<TEntity, bool>> expression, params Expression<Func<TEntity, object>>[] includes)
         {
             IQueryable<TEntity> query = dbContext.Set<TEntity>();
 
@@ -73,7 +73,7 @@ namespace BuildingBlocks.Data
                 query = query.Include(include);
             }
 
-            return await query.Where(expression).SingleOrDefaultAsync();
+            return await query.FirstOrDefaultAsync(expression);
 
         }
 

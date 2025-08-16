@@ -16,7 +16,7 @@ namespace Posts.Api.Core.Application.Features.Posts.LikePost
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Likes]);
             if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
-            if (!await followerRepository.ActiveUserHasAccessToGivenUsersPosts(post.UserId))
+            if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
             {
                 return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
             }

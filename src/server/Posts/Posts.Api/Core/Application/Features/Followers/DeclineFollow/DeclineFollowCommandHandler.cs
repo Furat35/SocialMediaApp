@@ -14,7 +14,7 @@ namespace Posts.Api.Core.Application.Features.Followers.DeclineFollow
         public async Task<ResponseDto<bool>> Handle(DeclineFollowCommand request, CancellationToken cancellationToken)
         {
             var follow = await followerRepository
-                .Get(_ => _.RequestingUserId == request.UserId && _.RespondingUserId == httpContext.GetUserId() && 
+                .Get(_ => _.RequestingUserId == request.UserId && _.RespondingUserId == httpContext.GetUserId() &&
                     _.Status == FollowStatus.Pending && _.IsValid)
                 .FirstOrDefaultAsync(cancellationToken);
             if (follow is null)

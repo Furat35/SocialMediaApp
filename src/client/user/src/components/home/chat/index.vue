@@ -46,15 +46,15 @@ import { useUserStore } from '@user/src/helpers/store';
 import { UserListDto } from '@shared/models/users/UserListDto';
 import { ChatListDto } from '@user/src/models/chats/chatListDto';
 import { ScrollModel } from '@shared/models/ScrollModel';
-import { FollowerListModel } from '@shared/models/followers/FollowerListModel';
 
 export default {
+    name: 'MessageComponent',
     components: {
         LeftSidebar
     },
     data() {
         return {
-            name: 'MessagePage',
+            name: 'ChatsComponent',
             selectedUser: null as UserListDto,
             chatHistory: [] as ChatListDto[],
             chatHistoryScrollModel: new ScrollModel(),

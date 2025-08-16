@@ -5,7 +5,7 @@ aside.ig-sidebar.ig-sidebar-left
                         span.material-icons home
                 router-link.ig-nav-link.d-block(:to="{ name: 'explore' }")
                         span.material-icons explore
-                router-link.ig-nav-link.d-block(:to="{ name: 'message' }")
+                router-link.ig-nav-link.d-block(:to="{ name: 'chat' }")
                         span.material-icons send
                 router-link.ig-login-btn.ig-nav-link(:to="{ name: 'follower-requests' }")
                         span.material-icons group

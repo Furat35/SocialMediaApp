@@ -6,7 +6,6 @@ using SocialMediaApp.Aggregator.helpers;
 using SocialMediaApp.Aggregator.Models.Chats;
 using SocialMediaApp.Aggregator.Models.Followers;
 using SocialMediaApp.Aggregator.Models.Users;
-using System.Net.Http.Json;
 
 namespace SocialMediaApp.Aggregator.Controllers
 {

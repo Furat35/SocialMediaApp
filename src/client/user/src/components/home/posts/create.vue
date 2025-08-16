@@ -31,6 +31,7 @@ import { PostCreateDto } from '@user/src/models/posts/PostCreateDto';
 import { useUserStore } from '@user/src/helpers/store';
 
 export default {
+    name: 'PostCreateModal',
     props: {
         showPostCreateModal: {
             type: Boolean,

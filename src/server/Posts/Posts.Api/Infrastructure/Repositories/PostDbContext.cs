@@ -47,5 +47,6 @@ namespace Posts.Api.Infrastructure.Repositories
         public DbSet<Like> Likes { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Follower> Followers { get; set; }
+        public DbSet<Story> Stories { get; set; }
     }
 }

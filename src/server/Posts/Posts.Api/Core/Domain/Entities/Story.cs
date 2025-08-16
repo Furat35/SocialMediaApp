@@ -1,5 +1,4 @@
 ﻿using BuildingBlocks.Models;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Posts.Api.Core.Domain.Entities
 {

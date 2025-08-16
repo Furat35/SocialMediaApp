@@ -14,7 +14,7 @@ namespace Posts.Api.Core.Application.Features.Followers.AcceptFollowRequest
         public async Task<ResponseDto<bool>> Handle(AcceptFollowRequestCommand request, CancellationToken cancellationToken)
         {
             var follow = await followerRepository
-                .Get(f => f.RequestingUserId == request.UserId && f.RespondingUserId == httpContext.GetUserId() && 
+                .Get(f => f.RequestingUserId == request.UserId && f.RespondingUserId == httpContext.GetUserId() &&
                     f.Status == FollowStatus.Pending && f.IsValid)
                 .FirstOrDefaultAsync();
             if (follow is null)

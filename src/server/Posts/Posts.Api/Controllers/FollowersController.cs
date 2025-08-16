@@ -6,6 +6,7 @@ using Posts.Api.Core.Application.Features.Followers.AcceptFollowRequest;
 using Posts.Api.Core.Application.Features.Followers.BanFollower;
 using Posts.Api.Core.Application.Features.Followers.CancelFollowRequest;
 using Posts.Api.Core.Application.Features.Followers.DeclineFollow;
+using Posts.Api.Core.Application.Features.Followers.GetFollowerCount;
 using Posts.Api.Core.Application.Features.Followers.GetFollowerPosts;
 using Posts.Api.Core.Application.Features.Followers.GetFollowersByUserId;
 using Posts.Api.Core.Application.Features.Followers.GetFollowersByUserIds;
@@ -45,6 +46,13 @@ namespace Posts.Api.Controllers
         public async Task<IActionResult> GetFollowStatus([FromQuery] GetFollowerPostsQuery request)
         {
             var response = await mediator.Send(request);
+            return Ok(response);
+        }
+
+        [HttpGet("count")]
+        public async Task<IActionResult> GetFollowerCount([FromQuery] GetFollowerCountQuery request)
+        {
+            var response = await mediator.Send(new GetFollowerCountQuery());
             return Ok(response);
         }
 

@@ -27,7 +27,7 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
                 .ToListAsync(cancellationToken);
 
             var mappedData = mapper.Map<List<PostListDto>>(response);
-            if (!await followerRepository.ActiveUserHasAccessToGivenUsersPosts(request.UserId))
+            if (!await followerRepository.ActiveUserHasAccessToGivenUser(request.UserId))
             {
                 return new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts, null);
             }

@@ -203,6 +203,66 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
+      "ServiceName": "posts.api",
+      "DownstreamPathTemplate": "/api/stories/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/stories/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "posts.api",
+      "DownstreamPathTemplate": "/api/stories",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/stories",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/aggregated/stories/{everything}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/aggregated/stories/{everything}",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
+      "ServiceName": "socialmediaapp.aggregator",
+      "DownstreamPathTemplate": "/api/aggregated/stories",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/aggregated/stories",
+      "UpstreamHttpMethod": [ "Get", "Post", "Delete", "Put" ],
+      "UpstreamScheme": "http",
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer"
+      }
+    },
+    {
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "UseServiceDiscovery": true,
       "ServiceName": "chat.signalr",
       "DownstreamPathTemplate": "/api/chats/{everything}",
       "DownstreamScheme": "http",

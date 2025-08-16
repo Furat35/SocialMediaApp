@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router
 import HomeView from '../views/HomeView.vue'
 import MainPageComponent from '../components/home/main-page/index.vue'
 import SettingsComponent from '../components/home/settings/index.vue'
-import MessageComponent from '../components/home/messages/index.vue'
+import ChatComponent from '../components/home/chat/index.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ExploreComponent from '../components/home/explore/index.vue'
@@ -28,9 +28,9 @@ const router = createRouter({
           component: SettingsComponent,
         },
         {
-          name: 'message',
-          path: '/messages',
-          component: MessageComponent,
+          name: 'chat',
+          path: '/chat',
+          component: ChatComponent,
         },
         {
           name: 'explore',

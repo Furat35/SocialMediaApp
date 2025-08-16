@@ -17,7 +17,7 @@ namespace Posts.Api.Infrastructure.Repositories
                 .AnyAsync();
         }
 
-        public async Task<bool> ActiveUserHasAccessToGivenUsersPosts(int userId)
+        public async Task<bool> ActiveUserHasAccessToGivenUser(int userId)
         {
             var isFollowing = await IsFollowing(userId, httpContext.GetUserId());
             return httpContext.GetUserId() == userId || isFollowing;
