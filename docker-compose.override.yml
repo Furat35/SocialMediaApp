@@ -75,6 +75,23 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
 
+  stories.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8005
+      - ConnectionStrings__StoriesDb=Server=sqlserver_socialmedia,1433;Database=StoriesDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
+      - ConsulConfig__Host=http://consul_socialmedia
+      - ConsulConfig__Port=8500
+    ports:
+      - "8005:8005"
+    depends_on:
+        - consul_socialmedia
+        - sqlserver_socialmedia 
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+
+
   socialmediaapp.aggregator:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production

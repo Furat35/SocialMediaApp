@@ -1,27 +1,29 @@
 <template lang="pug">
     .ig-stories-bar
         div.story-circle.ig-story.add-story(
-            v-if="!stories.length || stories[0]?.userId !== useUserStore.getUserId"
+            v-if="!allStories.length || allStories[0][0]?.userId !== useUserStore.getUserId"
             @click='addStoryModal = !addStoryModal'
             style="cursor: pointer"
         )
             span.add-icon ＋ 
         div.story-circle.ig-story(
-            v-for="(story, index) in stories"
+            v-for="(story, index) in allStories"
             :key="index"
-            @click="openStoryModal(story)"
+            @click="openStoryModal(story, index)"
             style="cursor: pointer"
         )
-            img(:src='`${gatewayUrl}users/image?userId=${story.userId}`' alt='story')
+            img(:src='`${gatewayUrl}users/image?userId=${story[0].userId}`' alt='story')
     ViewStoryModal(
         v-if="showModal && selectedStory"
         :selectedStory="selectedStory"
         @close="closeStoryModal"
         @storyRemoved='storyRemoved'
+        @prevStory='prevStory'
+        @nextStory='nextStory'
     )
         template(v-slot:navigation-buttons)
-            button.prev-btn(@click="prevStory" :disabled="stories.findIndex(s => s.id === selectedStory?.id) === 0") ‹
-            button.next-btn(@click="nextStory" :disabled="stories.findIndex(s => s.id === selectedStory?.id) === stories.length - 1") ›
+            button.prev-btn(@click="prevStory" :disabled="selectedStoryIndex <= 0") ‹
+            button.next-btn(@click="nextStory" :disabled="selectedStoryIndex >= allStories.length - 1") ›
 
     AddStoryModal(v-if='addStoryModal'  @storyCreated='storyCreated' @close='closeAddStory')
 </template>
@@ -41,28 +43,28 @@ export default {
     },
     data() {
         return {
-            stories: [] as StoryListModel[],
+            allStories: [] as StoryListModel[][],
             storyScrollModel: new ScrollModel(),
             gatewayUrl: import.meta.env.VITE_GatewayUrl,
             useUserStore: useUserStore(),
             showModal: false,
-            selectedStory: null as StoryListModel | null,
+            selectedStory: [] as StoryListModel[],
+            selectedStoryIndex: 0,
             showMenu: false,
             addStoryModal: false
         }
     },
     async created() {
-        await this.getStories();
+        await this.getAllStories();
         const story = await this.getStoryByUserId(this.useUserStore.getUserId);
         if (story) {
-            this.stories.unshift(story);
+            this.allStories.unshift(story);
         }
     },
     methods: {
-        async getStories() {
+        async getAllStories() {
             var response = await this.$axios.get(`/aggregated/stories?page=${this.storyScrollModel.currentPage}&pageSize=10`)
-            console.log('Stories response:', response.data.data);
-            Object.assign(this.stories, response.data.data);
+            Object.assign(this.allStories, response.data.data);
         },
         async getUserInfo(userId: number) {
             var response = await this.$axios.get(`/users/${userId}`);
@@ -71,7 +73,6 @@ export default {
         async getStoryByUserId(userId: number) {
             try {
                 var storyResponse = await this.$axios.get(`/stories/${userId}`);
-                console.log(storyResponse.data.data);
                 let user = await this.getUserInfo(userId);
                 storyResponse.data.data.forEach(story => {
                     story.user = user
@@ -85,39 +86,55 @@ export default {
             }
         },
         prevStory() {
-            const idx = this.stories.findIndex(s => s.id === this.selectedStory?.id);
-            if (idx > 0) {
-                this.openStoryModal(this.stories[idx - 1]);
+            this.selectedStoryIndex--;
+            if (this.selectedStoryIndex < 0) {
+                this.closeStoryModal();
+                return;
             }
+            this.openStoryModal(this.allStories[this.selectedStoryIndex], this.selectedStoryIndex);
         },
         nextStory() {
-            const idx = this.stories.findIndex(s => s.id === this.selectedStory?.id);
-            if (idx < this.stories.length - 1) {
-                this.openStoryModal(this.stories[idx + 1]);
+            this.selectedStoryIndex++;
+            if (this.selectedStoryIndex > this.allStories.length - 1) {
+                this.closeStoryModal();
+                return;
             }
+            this.openStoryModal(this.allStories[this.selectedStoryIndex], this.selectedStoryIndex);
         },
-        async openStoryModal(story: StoryListModel) {
+        async openStoryModal(story: StoryListModel[], index: number) {
             this.showMenu = false
             this.showModal = true;
-            this.selectedStory ??= new StoryListModel();
+            this.selectedStoryIndex = index;
+            this.selectedStory = [] as StoryListModel[];
             Object.assign(this.selectedStory, story);
         },
         closeStoryModal() {
             this.showModal = false;
+            this.selectedStoryIndex = 0;
             this.selectedStory = null;
         },
         closeAddStory() {
             this.addStoryModal = false;
         },
         storyCreated(story: StoryListModel) {
-            this.stories.unshift(story);
+            let userStory = this.allStories.find(s => s[0].userId === story.userId)
+            if (!userStory) {
+                this.allStories.unshift([story]);
+            } else {
+                userStory.unshift(story);
+            }
             this.closeAddStory();
         },
         storyRemoved(storyId: number) {
-            this.stories = this.stories.filter(s => s.id !== storyId);
-            if (this.selectedStory?.id === storyId) {
+            this.allStories = this.allStories.filter(s => {
+                let res = s.filter(story => story.id !== storyId)
+                return res.length !== 0
+            })
+            if (this.selectedStory[0]?.id === storyId) {
                 this.closeStoryModal();
             }
+
+            console.log('Story removed:', this.allStories[0][0]?.userId);
         },
     }
 }

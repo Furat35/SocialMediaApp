@@ -173,7 +173,7 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
-      "ServiceName": "posts.api",
+      "ServiceName": "identityserver.api",
       "DownstreamPathTemplate": "/api/followers/{everything}",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/followers/{everything}",
@@ -188,7 +188,7 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
-      "ServiceName": "posts.api",
+      "ServiceName": "identityserver.api",
       "DownstreamPathTemplate": "/api/followers",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/followers",
@@ -203,7 +203,7 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
-      "ServiceName": "posts.api",
+      "ServiceName": "stories.api",
       "DownstreamPathTemplate": "/api/stories/{everything}",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/stories/{everything}",
@@ -218,7 +218,7 @@
         "Type": "LeastConnection"
       },
       "UseServiceDiscovery": true,
-      "ServiceName": "posts.api",
+      "ServiceName": "stories.api",
       "DownstreamPathTemplate": "/api/stories",
       "DownstreamScheme": "http",
       "UpstreamPathTemplate": "/stories",

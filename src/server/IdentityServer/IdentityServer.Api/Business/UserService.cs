@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Extensions;
+using BuildingBlocks.Interfaces.Services;
 using BuildingBlocks.Models;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Dtos.AppUsers;

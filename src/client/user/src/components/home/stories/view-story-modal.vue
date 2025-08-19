@@ -1,9 +1,15 @@
 <template lang="pug">
     div.story-modal
         div.modal-content
+            div.story-progress-bar
+                div.story-progress-segment(
+                    v-for="(s, i) in story"
+                    :key="s.id"
+                    :class="{ active: i === storyIndex }"
+                )
             button.close-btn(@click="closeStoryModal" style="color:aliceblue") ×
             button.menu-btn(
-                v-if="story && story.userId === useUserStore.getUserId"
+                v-if="story && story[storyIndex].userId === useUserStore.getUserId"
                 @click="showMenu = !showMenu"
                 aria-label="Open menu"
             ) 
@@ -16,33 +22,41 @@
                 style="height: 50px"
             )
                 ul.menu-list
-                    li.menu-item(@click="removeStory(story.id); showMenu = false") Remove story
+                    li.menu-item(@click="removeStory(story[storyIndex].id); showMenu = false") Remove story
+            button.prev-story(
+                @click="prevStory"
+            ) 
+            button.next-story(
+                @click="nextStory"
+            ) 
             slot(name="navigation-buttons")
             img.story-image(
-                v-if="story?.imageUrl"
-                :src="story.imageUrl"
+                v-if="story[storyIndex]?.imageUrl"
+                :src="story[storyIndex].imageUrl"
                 alt="story image"
             )
-            a.user-info(style="cursor: pointer;text-decoration:none" @click.prevent="goToProfile(story.userId)") 
-                img.story-circle(:src='`${gatewayUrl}users/image?userId=${story.userId}`' class="me-2" style='width:40px;height:40px' alt='story')
-                span.story-username {{ story.user.fullname }} (@{{ story.user.username }})
+            a.user-info(style="cursor: pointer;text-decoration:none" @click.prevent="goToProfile(story[storyIndex].userId)") 
+                img.story-circle(:src='`${gatewayUrl}users/image?userId=${story[storyIndex].userId}`' class="me-2" style='width:40px;height:40px' alt='story')
+                span.story-username {{ story[storyIndex].user.fullname }} (@{{ story[storyIndex].user.username }})
 </template>
 
 <script lang="ts">
 import { StoryListModel } from '@shared/models/stories/storyListModel';
 import { useUserStore } from '@user/src/helpers/store';
+import { PropType } from 'vue';
 
 export default {
     name: 'ViewStoryModal',
     props: {
         selectedStory: {
-            type: null as StoryListModel as null,
+            type: Array as PropType<StoryListModel[]>,
             required: true
         }
     },
     data() {
         return {
-            story: new StoryListModel(),
+            story: [] as StoryListModel[],
+            storyIndex: 0 as number,
             gatewayUrl: import.meta.env.VITE_GatewayUrl,
             useUserStore: useUserStore(),
             showMenu: false,
@@ -50,23 +64,29 @@ export default {
     },
     watch: {
         selectedStory: {
-            handler(newStory) {
-                Object.assign(this.story, newStory)
-                this.setStoryImage(this.story);
-                if (!newStory.user) {
-                    this.getUserInfo(newStory.userId).then(res => {
-                        this.story.user = res.data.data
+            async handler(newStory) {
+                this.story = [...newStory]
+                this.storyIndex = 0;
+                try {
+                    this.setStoryImage(this.storyIndex);
+                } catch (error) {
+                    console.error('Error setting story image:', error);
+                }
+                await this.setStoryImage(this.storyIndex);
+                if (!newStory[0].user) {
+                    this.getUserInfo(newStory[0].userId).then(res => {
+                        this.story.forEach(_ => _.user = res.data.data)
                     });
                 }
-            },
-            deep: true
+            }
         }
     },
     async created() {
         Object.assign(this.story, this.selectedStory);
-        this.setStoryImage(this.story)
-        if (!this.story.user) {
-            this.story.user ??= await this.getUserInfo(this.story.userId);
+        this.setStoryImage(this.storyIndex)
+        if (!this.story[this.storyIndex].user) {
+            let user = await this.getUserInfo(this.story.userId);
+            this.story.forEach(_ => _.user = user)
         }
     },
     methods: {
@@ -74,12 +94,11 @@ export default {
             var response = await this.$axios.get(`/users/${userId}`);
             return response.data.data;
         },
-        async setStoryImage(story: StoryListModel) {
-            const imageResponse = await this.$axios.get(`/stories/image?storyId=${story.id}`, {
+        async setStoryImage(index: number) {
+            const imageResponse = await this.$axios.get(`/stories/image?storyId=${this.story[index].id}`, {
                 responseType: 'blob',
             });
-
-            story.imageUrl = URL.createObjectURL(imageResponse.data);
+            this.story[index].imageUrl = URL.createObjectURL(imageResponse.data);
         },
         goToProfile(newUserId: number) {
             this.$router.push({ name: 'profile', query: { userId: newUserId } });
@@ -94,12 +113,26 @@ export default {
             )
             if (!response.data.isError) {
                 this.$emit('storyRemoved', storyId);
-                this.closeStoryModal();
             }
-
         },
         closeStoryModal() {
             this.$emit('close')
+        },
+        prevStory() {
+            if (this.storyIndex > 0) {
+                this.storyIndex--;
+                this.setStoryImage(this.storyIndex);
+                return
+            }
+            this.$emit('prevStory');
+        },
+        nextStory() {
+            if (this.storyIndex < this.story.length - 1) {
+                this.storyIndex++;
+                this.setStoryImage(this.storyIndex);
+                return
+            }
+            this.$emit('nextStory')
         }
     }
 }
@@ -117,6 +150,29 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 1000;
+}
+
+.story-progress-bar {
+    display: flex;
+    position: absolute;
+    top: 3px;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    z-index: 20;
+    padding: 0 10px;
+    gap: 2px;
+}
+
+.story-progress-segment {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.story-progress-segment.active {
+    background: rgba(255, 255, 255, 0.75);
 }
 
 .modal-content {
@@ -141,6 +197,7 @@ export default {
     color: #888;
     cursor: pointer;
     transition: color 0.2s;
+    z-index: 9999;
 }
 
 .close-btn:hover {
@@ -229,5 +286,33 @@ export default {
 
 .menu-item:hover {
     background: #f7f7f7;
+}
+
+.prev-story,
+.next-story {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.0);
+    border: none;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.prev-story {
+    left: 0px;
+}
+
+.next-story {
+    right: 0px;
+}
+
+.prev-story:hover,
+.next-story:hover {
+    background: rgba(255, 255, 255, 0);
 }
 </style>

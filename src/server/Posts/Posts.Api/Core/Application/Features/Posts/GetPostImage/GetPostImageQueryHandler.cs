@@ -4,16 +4,16 @@ using Posts.Api.Core.Application.Repositories;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostImage
 {
-    public class GetStoryImageQueryHandler(IPostRepository postRepository, IFollowerRepository followerRepository)
+    public class GetStoryImageQueryHandler(IPostRepository postRepository)
         : IRequestHandler<GetPostImageQuery, (byte[] image, string fileType)>
     {
         public async Task<(byte[] image, string fileType)> Handle(GetPostImageQuery request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId);
-            if (post is not null && !await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
-            {
-                throw new BadHttpRequestException("You do not have permission to access this user's posts.");
-            }
+            //if (post is not null && !await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
+            //{
+            //    throw new BadHttpRequestException("You do not have permission to access this user's posts.");
+            //}
 
             if (!File.Exists(post.ImagePath))
                 throw new Exception("File doesn't exist");

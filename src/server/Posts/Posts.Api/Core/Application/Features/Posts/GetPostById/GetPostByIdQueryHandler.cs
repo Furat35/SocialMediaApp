@@ -7,8 +7,7 @@ using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostById
 {
-    public class GetPostByIdQueryHandler(IPostRepository postRepository, IMapper mapper,
-        IFollowerRepository followerRepository, IHttpContextAccessor httpContext)
+    public class GetPostByIdQueryHandler(IPostRepository postRepository, IMapper mapper, IHttpContextAccessor httpContext)
         : IRequestHandler<GetPostByIdQuery, ResponseDto<PostListDto>>
     {
         public async Task<ResponseDto<PostListDto>> Handle(GetPostByIdQuery request, CancellationToken cancellationToken)
@@ -16,8 +15,8 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostById
             var post = await postRepository.GetByIdAsync(request.Id, includes: [i => i.Likes, i => i.Comments]);
             if (post == null) return ResponseDto<PostListDto>.Fail("Post not found", HttpStatusCode.NotFound);
 
-            if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
-                return ResponseDto<PostListDto>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
+            //if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
+            //    return ResponseDto<PostListDto>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
 
             var mappedPost = mapper.Map<PostListDto>(post);
 

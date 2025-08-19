@@ -108,7 +108,7 @@ export default {
       user: new UserListDto(),
       postsScrollModel: new ScrollModel(),
       selectedPost: null as PostListDto | null,
-      story: null as StoryListModel | null,
+      story: [] as StoryListModel[],
       followStatus: new FollowerListModel(),
       FollowStatusEnum,
       showStoryModal: false,
@@ -178,8 +178,10 @@ export default {
     async getStoryByUserId(userId: number) {
       try {
         var storyResponse = await this.$axios.get(`/stories/${userId}`);
-        storyResponse.data.data.user = new UserListDto();
-        Object.assign(storyResponse.data.data.user, this.user);
+        storyResponse.data.data.forEach(story => {
+          console.log('Story user:', story.user);
+          story.user = this.user
+        })
         return storyResponse.data.data;
       } catch (error) {
         if (error.response && error.response.status === 404) {

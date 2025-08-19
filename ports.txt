@@ -3,6 +3,8 @@ Gateway.Api => 6000
 IdentityServer.Api => 6001
 Posts.Api => 6002
 SocialMediaApp.Aggregator => 6003
+Chat.SignalR => 6004
+Stories.Api => 6005
 
 // local
 Gateway.Api => 8000
@@ -10,3 +12,4 @@ IdentityServer.Api => 8001
 Posts.Api => 8002
 SocialMediaApp.Aggregator => 8003
 Chat.SignalR => 8004
+Stories.Api => 8005
