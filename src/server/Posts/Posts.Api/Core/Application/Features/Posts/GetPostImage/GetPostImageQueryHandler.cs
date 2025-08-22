@@ -1,6 +1,8 @@
-﻿using MediatR;
+﻿using BuildingBlocks.Models.Constants;
+using MediatR;
 using Microsoft.AspNetCore.StaticFiles;
 using Posts.Api.Core.Application.Repositories;
+using Posts.Api.ExternalServices;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostImage
 {
@@ -10,13 +12,12 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostImage
         public async Task<(byte[] image, string fileType)> Handle(GetPostImageQuery request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId);
-            //if (post is not null && !await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
-            //{
-            //    throw new BadHttpRequestException("You do not have permission to access this user's posts.");
-            //}
+            if (post is null)
+                throw new BadHttpRequestException(ErrorMessages.BadRequest);
+            if (post.UserId != request.FollowerId) throw new BadHttpRequestException(ErrorMessages.Forbidden);
 
             if (!File.Exists(post.ImagePath))
-                throw new Exception("File doesn't exist");
+                throw new Exception(ErrorMessages.FileNotFound);
 
             var provider = new FileExtensionContentTypeProvider();
             if (!provider.TryGetContentType(post.ImagePath, out var contentType))

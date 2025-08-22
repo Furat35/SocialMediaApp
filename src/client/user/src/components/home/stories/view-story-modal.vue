@@ -95,7 +95,7 @@ export default {
             return response.data.data;
         },
         async setStoryImage(index: number) {
-            const imageResponse = await this.$axios.get(`/stories/image?storyId=${this.story[index].id}`, {
+            const imageResponse = await this.$axios.get(`/stories/image?storyId=${this.story[index].id}&followerId=${this.story[index].userId}`, {
                 responseType: 'blob',
             });
             this.story[index].imageUrl = URL.createObjectURL(imageResponse.data);

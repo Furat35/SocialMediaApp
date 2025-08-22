@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Chat.SignalR.Controllers
 {
-    // feature: yeni mesaj geldiğinde mesajın okunmadığı işaretlenmesi 
     [Route("api/[controller]")]
     [ApiController]
     public class ChatsController(IHttpContextAccessor httpContextAccessor, ChatDbContext context) : ControllerBase

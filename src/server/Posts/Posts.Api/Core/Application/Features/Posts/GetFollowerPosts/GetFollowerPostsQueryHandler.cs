@@ -8,8 +8,9 @@ using Posts.Api.ExternalServices;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetFollowerPosts
 {
-    public class GetFollowerPostsQueryHandler(IPostRepository postRepository,
-        IHttpContextAccessor httpContext, IFollowerService followerService,
+    public class GetFollowerPostsQueryHandler(
+        IPostRepository postRepository,
+        IFollowerService followerService,
         IMapper mapper)
         : IRequestHandler<GetFollowerPostsQuery, PaginationResponseModel<PostListDto>>
     {

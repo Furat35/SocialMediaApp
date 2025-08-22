@@ -1,9 +1,9 @@
 ﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Helpers;
 using BuildingBlocks.Interfaces.Services;
-using BuildingBlocks.Services;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Stories.Api.Core.Application.Repositories;
+using Stories.Api.Behaviours;
 using Stories.Api.Infrastructure.Repositories;
 using System.Reflection;
 
@@ -14,6 +14,7 @@ namespace Stories.Api.Extensions
         public static void AddStoriesApiServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FollowerAuthorizationBehavior<,>));
             services.AddTransient<BearerTokenHandler>();
             services.AddHttpClient("default")
                 .AddHttpMessageHandler<BearerTokenHandler>();
@@ -23,8 +24,8 @@ namespace Stories.Api.Extensions
             services.AddAutoMapper(typeof(Program).Assembly);
             services.AddHealthChecks();
             services.AddHttpContextAccessor();
-            services.AddScoped<IStoryRepository, StoryRepository>();
-            services.AddScoped<IFileService, FileService>();
+            services.AddAllServices([Assembly.GetExecutingAssembly(), Assembly.GetAssembly(typeof(IFileService))]);
+            services.AddAllRepositories([Assembly.GetExecutingAssembly()]);
             services.ConfigureAuthentication(configuration);
 
         }

@@ -6,7 +6,6 @@ using Posts.Api.Core.Application.Features.Posts.CreatePost;
 using Posts.Api.Core.Application.Features.Posts.CreatePostComment;
 using Posts.Api.Core.Application.Features.Posts.DeletePost;
 using Posts.Api.Core.Application.Features.Posts.GetFollowerPosts;
-using Posts.Api.Core.Application.Features.Posts.GetPostById;
 using Posts.Api.Core.Application.Features.Posts.GetPostImage;
 using Posts.Api.Core.Application.Features.Posts.GetPostsByUserId;
 using Posts.Api.Core.Application.Features.Posts.LikePost;
@@ -19,12 +18,12 @@ namespace Posts.Api.Controllers
     [Authorize]
     public class PostsController(IMediator mediatr) : BaseController
     {
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetPostById([FromQuery] GetPostByIdQuery request)
-        {
-            var response = await mediatr.Send(request);
-            return CreateActionResult(response);
-        }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetPostById([FromQuery] GetPostByIdQuery request)
+        //{
+        //    var response = await mediatr.Send(request);
+        //    return CreateActionResult(response);
+        //}
 
         [HttpGet]
         public async Task<IActionResult> GetPostsByUserId([FromQuery] GetPostsByUserIdQuery request)
@@ -47,13 +46,6 @@ namespace Posts.Api.Controllers
             return File(response.image, response.fileType);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePost([FromForm] CreatePostCommandRequest request)
-        {
-            var response = await mediatr.Send(request);
-            return CreateActionResult(response);
-        }
-
         [HttpPut]
         public async Task<IActionResult> UpdatePost(UpdatePostCommand request)
         {
@@ -63,6 +55,14 @@ namespace Posts.Api.Controllers
 
         [HttpDelete]
         public async Task<IActionResult> DeletePost([FromQuery] DeletePostCommand request)
+        {
+            var response = await mediatr.Send(request);
+            return CreateActionResult(response);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> CreatePost([FromForm] CreatePostCommandRequest request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);

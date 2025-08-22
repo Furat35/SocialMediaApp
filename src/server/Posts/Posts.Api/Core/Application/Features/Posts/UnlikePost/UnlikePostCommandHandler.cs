@@ -1,32 +1,31 @@
-﻿using AutoMapper;
-using BuildingBlocks.Extensions;
+﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using MediatR;
 using Posts.Api.Core.Application.Repositories;
 using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.UnlikePost
 {
-    public class UnlikePostCommandHandler(IPostRepository postRepository, IMapper mapper, IHttpContextAccessor httpContext)
+    public class UnlikePostCommandHandler(
+        IPostRepository postRepository,
+        IHttpContextAccessor httpContext)
         : IRequestHandler<UnlikePostCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(UnlikePostCommand request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Likes]);
-            if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
-            //if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
-            //{
-            //    return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
-            //}
+            if (post == null) return ResponseDto<bool>.Fail(ErrorMessages.NotFound, HttpStatusCode.NotFound);
+            if (post.UserId != request.FollowerId) return ResponseDto<bool>.Fail(ErrorMessages.Forbidden, HttpStatusCode.Forbidden);
 
             var likeToRemove = post.Likes.First(_ => _.UserId == httpContext.GetUserId());
-            if (likeToRemove == null) return ResponseDto<bool>.Fail("Not found", HttpStatusCode.NotFound);
+            if (likeToRemove == null) return ResponseDto<bool>.Fail(ErrorMessages.NotFound, HttpStatusCode.NotFound);
 
             post.Likes.Remove(likeToRemove);
 
             return ResponseDto<bool>.GenerateResponse(await postRepository.SaveChangesAsync() > 0)
                .Success(true, HttpStatusCode.OK)
-               .Fail("An error occured while removing comment!", HttpStatusCode.InternalServerError);
+               .Fail(ErrorMessages.DeleteError, HttpStatusCode.InternalServerError);
         }
     }
 }

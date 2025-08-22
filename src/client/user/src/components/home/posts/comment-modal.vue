@@ -9,10 +9,11 @@
             .comment(v-for='comment in selectedPost.comments' :key='comment.id')
               span(@click='goToProfile(comment.user.id)' style='cursor: pointer;')
                 img.me-2(:src='`${gatewayUrl}users/image?userId=${comment.user.id}`' style='border-radius: 50%;width: 25px;height: 25px;' alt='post' height='30px')
-                strong {{ comment.user.username }}
+                strong(class='me-1') {{ comment.user.username }}
                 span {{ comment.userComment }}
-              span(style='display: block;margin-right: auto;text-align: end;font-size: small;')
+              span(style='display: block;text-align: end;font-size: small')
                 | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
+                span(@click='deleteComment(comment)' style='cursor:pointer' class='ms-2 text-danger' v-if='comment.user.id == useUserStore.getUserId') Delete
               hr
           .add-comment
             input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
@@ -46,13 +47,19 @@ export default {
         },
         async addComment() {
             if (!this.newComment.trim() || !this.selectedPost) return;
-            var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}`)
+            var response = await this.$axios.post(`/posts/add-comment?postId=${this.selectedPost.id}&userComment=${this.newComment}&followerId=${this.selectedPost.userId}`);
             if (!response.data.isError) {
                 this.selectedPost.comments.push(new PostCommentListDto({
                     postId: this.selectedPost.id, userComment: this.newComment,
                     user: new UserListDto({ id: this.useUserStore.getUserId, username: this.useUserStore.getUsername }), createDate: new Date()
                 }))
                 this.newComment = '';
+            }
+        },
+        async deleteComment(comment: PostCommentListDto) {
+            var response = await this.$axios.post(`/posts/remove-comment?postId=${comment.postId}&commentId=${comment.id}&followerId=${comment.user.id}`);
+            if (!response.data.isError) {
+                this.selectedPost.comments = this.selectedPost.comments.filter(c => c.id != comment.id);
             }
         },
         closeCommentsModal() {

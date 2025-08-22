@@ -33,7 +33,7 @@ namespace Stories.Api.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetById([FromRoute] GetStoryByUserIdQuery request)
+        public async Task<IActionResult> GetByUserId([FromRoute] GetStoryByUserIdQuery request)
         {
             var result = await mediator.Send(request);
             return CreateActionResult(result);

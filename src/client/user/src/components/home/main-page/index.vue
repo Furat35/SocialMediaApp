@@ -103,7 +103,7 @@ export default {
                 return;
             }
             try {
-                var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
+                var response = await this.$axios.post(`/posts/like?postId=${post.id}&followerId=${post.userId}`)
                 if (!response.data.isError) {
                     var like = new PostLikeListDto({ user: new UserListDto({ id: this.userId }), postId: post.id });
                     post.likes.push(like)
@@ -113,7 +113,7 @@ export default {
             }
         },
         async removeLike(post: PostListDto) {
-            var response = await this.$axios.post(`/posts/unlike?postId=${post.id}`)
+            var response = await this.$axios.post(`/posts/unlike?postId=${post.id}&followerId=${post.userId}`)
             if (!response.data.isError)
                 post.likes = post.likes.filter(_ => _.user.id != this.userId)
         },
@@ -140,7 +140,7 @@ export default {
         },
         async setPostImages(postsToUpdate: PostListDto[]) {
             for (const post of postsToUpdate) {
-                const imageResponse = await this.$axios.get(`/posts/image?postId=${post.id}`, {
+                const imageResponse = await this.$axios.get(`/posts/image?postId=${post.id}&followerId=${post.userId}`, {
                     responseType: 'blob',
                 });
 

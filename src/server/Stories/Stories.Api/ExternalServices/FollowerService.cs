@@ -5,21 +5,34 @@ using Consul;
 
 namespace Stories.Api.ExternalServices
 {
-    public class FollowerService(IHttpClientFactory httpClientFactory, IConsulClient consulClient)
+    public class FollowerService : IFollowerService
     {
-        private readonly HttpClient? _httpClient = httpClientFactory.CreateClient("default");
+
+        private readonly HttpClient? _httpClient;
+
+        public FollowerService(IHttpClientFactory httpClientFactory, IConsulClient consulClient)
+        {
+            _httpClient = httpClientFactory.CreateClient("default");
+            var _identityServiceUrl = consulClient.ResolveServiceUrl(ConsulServiceNames.IdentityServer_Api).Result;
+            _httpClient.BaseAddress = new Uri(_identityServiceUrl);
+        }
+
         public async Task<List<int>> GetFollowerIdsAsync()
         {
-            var identityServiceUrl = await consulClient.ResolveServiceUrl(ConsulServiceNames.IdentityServer_Api);
-            var content = await _httpClient.GetAsync($"{identityServiceUrl}/api/followers/ids");
-            var followerResponse = await content.Content.ReadFromJsonAsync<ResponseDto<List<int>>>();
+            var content = await _httpClient.GetAsync($"api/followers/ids");
+            return (await content.Content.ReadFromJsonAsync<ResponseDto<List<int>>>()).Data;
+        }
 
-            return followerResponse.Data;
+        public async Task<bool> IsFollowing(int userId)
+        {
+            var content = await _httpClient.GetAsync($"api/followers/isFollowing?userId={userId}");
+            return await content.Content.ReadFromJsonAsync<bool>();
         }
     }
 
     public interface IFollowerService
     {
         Task<List<int>> GetFollowerIdsAsync();
+        Task<bool> IsFollowing(int userId);
     }
 }

@@ -17,10 +17,17 @@ namespace IdentityServer.Api.Controllers
             return Ok(response);
         }
 
-        [HttpPost("search")]
-        public async Task<IActionResult> GetFollowersByUserIds([FromQuery] PaginationRequestModel request, [FromBody] List<int> userIds)
+        [HttpGet("isFollowing")]
+        public async Task<IActionResult> UserHasAccessToGivenUser([FromQuery] int userId)
         {
-            var response = await followerService.GetFollowersByUserIds(request, userIds);
+            var response = await followerService.ActiveUserHasAccessToGivenUser(userId);
+            return Ok(response);
+        }
+
+        [HttpGet("status")]
+        public async Task<IActionResult> GetFollowStatus([FromQuery] int userId)
+        {
+            var response = await followerService.GetFollowStatus(userId);
             return Ok(response);
         }
 
@@ -31,12 +38,12 @@ namespace IdentityServer.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFollowStatus([FromQuery] int userId)
-        {
-            var response = await followerService.GetFollowStatus(userId);
-            return Ok(response);
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> GetFollowStatus([FromQuery] int userId)
+        //{
+        //    var response = await followerService.GetFollowStatus(userId);
+        //    return Ok(response);
+        //}
 
         [HttpGet("count")]
         public async Task<IActionResult> GetFollowerCount()
@@ -52,6 +59,13 @@ namespace IdentityServer.Api.Controllers
             return Ok(response);
         }
 
+
+        [HttpPost("search")]
+        public async Task<IActionResult> GetFollowersByUserIds([FromQuery] PaginationRequestModel request, [FromBody] List<int> userIds)
+        {
+            var response = await followerService.GetFollowersByUserIds(request, userIds);
+            return Ok(response);
+        }
 
         [HttpPost("follow/{userId}")]
         public async Task<IActionResult> SendFollowRequest([FromRoute] int userId)

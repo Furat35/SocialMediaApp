@@ -11,9 +11,9 @@ using System.Text;
 
 namespace IdentityServer.Api.Business
 {
-    public class AuthService(IUserService userService, IConfiguration configuration) : IAuthService
+    public class AuthService(IUserService userService, IConfiguration configuration)
+        : IAuthService
     {
-        public const int UserId = 4;
         public async Task<ResponseDto<LoginResponseModel>> LoginAsync(LoginRequestModel loginRequest)
         {
             var user = await userService.GetFirstAsync(_ => _.Username == loginRequest.Username);

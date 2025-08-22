@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using MediatR;
 using Posts.Api.Core.Application.Repositories;
 using Posts.Api.Core.Domain.Entities;
@@ -8,15 +9,17 @@ using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.CreatePostComment
 {
-    public class CreatePostCommentCommandHandler(IPostRepository postRepository, IMapper mapper, IHttpContextAccessor httpContext)
+    public class CreatePostCommentCommandHandler(
+        IPostRepository postRepository,
+        IHttpContextAccessor httpContext,
+        IMapper mapper)
         : IRequestHandler<CreatePostCommentCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(CreatePostCommentCommand request, CancellationToken cancellationToken)
         {
             var post = await postRepository.GetByIdAsync(request.PostId, [_ => _.Comments]);
-            if (post == null) return ResponseDto<bool>.Fail("Post not found", HttpStatusCode.NotFound);
-            //if (!await followerRepository.ActiveUserHasAccessToGivenUser(post.UserId))
-            //    return ResponseDto<bool>.Fail("You do not have permission to access this user's posts.", HttpStatusCode.Forbidden);
+            if (post is null) return ResponseDto<bool>.Fail(ErrorMessages.NotFound, HttpStatusCode.NotFound);
+            if (post.UserId != request.FollowerId) return ResponseDto<bool>.Fail(ErrorMessages.Forbidden, HttpStatusCode.Forbidden);
 
             var comment = mapper.Map<Comment>(request);
             comment.UserId = httpContext.GetUserId();
@@ -24,7 +27,7 @@ namespace Posts.Api.Core.Application.Features.Posts.CreatePostComment
 
             return ResponseDto<bool>.GenerateResponse(await postRepository.SaveChangesAsync() > 0)
                .Success(true, HttpStatusCode.OK)
-               .Fail("An error occured while adding comment!", HttpStatusCode.InternalServerError);
+               .Fail(ErrorMessages.CreateError, HttpStatusCode.InternalServerError);
         }
     }
 }

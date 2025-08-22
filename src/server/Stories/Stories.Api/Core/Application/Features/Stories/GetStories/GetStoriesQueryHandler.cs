@@ -1,24 +1,22 @@
 ﻿using AutoMapper;
-using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
-using Consul;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Stories.Api.Core.Application.Dtos.Stories;
 using Stories.Api.Core.Application.Repositories;
+using Stories.Api.ExternalServices;
 
 namespace Stories.Api.Core.Application.Features.Stories.GetStories
 {
-    public class GetStoriesQueryHandler(IStoryRepository storyRepository, IMapper mapper,
-        IConsulClient consulClient, IHttpClientFactory httpClientFactory)
+    public class GetStoriesQueryHandler(
+        IStoryRepository storyRepository,
+        IMapper mapper,
+        IFollowerService followerService)
         : IRequestHandler<GetStoriesQuery, PaginationResponseModel<List<StoryListDto>>>
     {
-        private readonly HttpClient? _httpClient = httpClientFactory.CreateClient("default");
         public async Task<PaginationResponseModel<List<StoryListDto>>> Handle(GetStoriesQuery request, CancellationToken cancellationToken)
         {
-            var identityServiceUrl = await consulClient.ResolveServiceUrl("identityserver.api");
-            var content = await _httpClient.GetAsync($"{identityServiceUrl}/api/followers/ids");
-            var followerIds = (await content.Content.ReadFromJsonAsync<ResponseDto<List<int>>>()).Data;
+            var followerIds = await followerService.GetFollowerIdsAsync();
 
             var storyFollowerIds = storyRepository
                 .Get(_ => followerIds.Contains(_.UserId) && _.IsValid)

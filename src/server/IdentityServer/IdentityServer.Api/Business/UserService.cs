@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Interfaces.Services;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Business.Interfaces;
@@ -102,7 +103,7 @@ namespace IdentityServer.Api.Business
         {
             var user = await GetByIdAsync(userId);
             if (!File.Exists(user.ProfileImage))
-                throw new Exception("File doesn't exist");
+                throw new Exception(ErrorMessages.FileNotFound);
 
             var provider = new FileExtensionContentTypeProvider();
             if (!provider.TryGetContentType(user.ProfileImage, out var contentType))

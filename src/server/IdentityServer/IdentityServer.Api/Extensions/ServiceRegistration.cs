@@ -1,9 +1,8 @@
-﻿using BuildingBlocks.Interfaces.Services;
-using BuildingBlocks.Services;
-using IdentityServer.Api.Business;
-using IdentityServer.Api.Business.Interfaces;
+﻿using BuildingBlocks.Extensions;
+using BuildingBlocks.Interfaces.Services;
 using IdentityServer.Api.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace IdentityServer.Api.Extensions
 {
@@ -11,16 +10,15 @@ namespace IdentityServer.Api.Extensions
     {
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IFileService, FileService>();
-            services.AddScoped<IFollowerService, FollowerService>();
+            services.AddAllServices([Assembly.GetExecutingAssembly(), Assembly.GetAssembly(typeof(IFileService))]);
+            services.AddAllRepositories([Assembly.GetExecutingAssembly()]);
             services.AddAutoMapper(typeof(Program).Assembly);
-            services.AddDbContext<IdentityDbContext>(opt =>
-            {
-                opt.UseSqlServer(configuration.GetConnectionString("IdentityDb"));
-            });
+            services.AddDbContext<IdentityDbContext>(opt => opt.UseSqlServer(configuration.GetConnectionString("IdentityDb")));
             services.AddControllers();
+            services.AddHealthChecks();
+            services.AddHttpContextAccessor();
+            services.ConfigureAuthentication(configuration);
+            services.ConfigureConsul(configuration);
 
             return services;
         }

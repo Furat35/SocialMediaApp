@@ -1,13 +1,20 @@
 ﻿using AutoMapper;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Posts;
 using Posts.Api.Core.Application.Repositories;
+using Posts.Api.Core.Domain.Entities;
+using Posts.Api.ExternalServices;
+using System.Net;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
 {
-    public class GetPostsByUserIdQueryHandler(IPostRepository postRepository, IMapper mapper)
+    public class GetPostsByUserIdQueryHandler(
+        IPostRepository postRepository,
+        IFollowerService followerService,
+        IMapper mapper)
         : IRequestHandler<GetPostsByUserIdQuery, PaginationResponseModel<PostListDto>>
     {
         public async Task<PaginationResponseModel<PostListDto>> Handle(GetPostsByUserIdQuery request, CancellationToken cancellationToken)
@@ -25,12 +32,8 @@ namespace Posts.Api.Core.Application.Features.Posts.GetPostsByUserId
                 .ToListAsync(cancellationToken);
 
             var mappedData = mapper.Map<List<PostListDto>>(response);
-            //if (!await followerRepository.ActiveUserHasAccessToGivenUser(request.UserId))
-            //{
-            //    return new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts, null);
-            //}
-
-            return new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts, mappedData);
+            return new PaginationResponseModel<PostListDto>(request.Page, request.PageSize, pageCount, totalUserPosts,
+                await followerService.IsFollowing(request.UserId) ? mappedData : null);
         }
     }
 }

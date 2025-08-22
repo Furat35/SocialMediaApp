@@ -2,6 +2,7 @@
 using BuildingBlocks.Extensions;
 using BuildingBlocks.Interfaces.Services;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using MediatR;
 using Stories.Api.Core.Application.Dtos.Stories;
 using Stories.Api.Core.Application.Repositories;
@@ -10,8 +11,11 @@ using System.Net;
 
 namespace Stories.Api.Core.Application.Features.Stories.CreateStory
 {
-    public class CreateStoryCommandHandler(IStoryRepository storyRepository, IHttpContextAccessor httpContext,
-         IMapper mapper, IFileService imageService)
+    public class CreateStoryCommandHandler(
+        IStoryRepository storyRepository,
+        IHttpContextAccessor httpContext,
+        IMapper mapper, 
+        IFileService imageService)
         : IRequestHandler<CreateStoryCommand, ResponseDto<StoryListDto>>
     {
         public async Task<ResponseDto<StoryListDto>> Handle(CreateStoryCommand request, CancellationToken cancellationToken)
@@ -34,12 +38,12 @@ namespace Stories.Api.Core.Application.Features.Stories.CreateStory
             catch (Exception ex)
             {
                 imageService.RemoveFile(path);
-                throw ex;
+                throw;
             }
 
             return ResponseDto<StoryListDto>.GenerateResponse(result > 0)
                 .Success(mapper.Map<StoryListDto>(story), HttpStatusCode.OK)
-                .Fail("An error occured while adding comment!", HttpStatusCode.InternalServerError);
+                .Fail(ErrorMessages.CreateError, HttpStatusCode.InternalServerError);
         }
     }
 }

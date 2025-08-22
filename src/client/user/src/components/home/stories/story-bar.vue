@@ -74,9 +74,7 @@ export default {
             try {
                 var storyResponse = await this.$axios.get(`/stories/${userId}`);
                 let user = await this.getUserInfo(userId);
-                storyResponse.data.data.forEach(story => {
-                    story.user = user
-                });
+                storyResponse.data.data.forEach(story => story.user = user);
                 return storyResponse.data.data;
             } catch (error) {
                 if (error.response && error.response.status === 404) {
