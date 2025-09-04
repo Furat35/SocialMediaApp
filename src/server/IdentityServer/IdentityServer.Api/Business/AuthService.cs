@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Models;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Interfaces;
+using IdentityServer.Api.Data.Repository;
 using IdentityServer.Api.Models;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,19 +12,19 @@ using System.Text;
 
 namespace IdentityServer.Api.Business
 {
-    public class AuthService(IUserService userService, IConfiguration configuration)
-        : IAuthService
+    public class AuthService(IUserRepository userRepository, IConfiguration configuration)
+        : BaseService<IUserRepository, AppUser>(userRepository), IAuthService
     {
         public async Task<ResponseDto<LoginResponseModel>> LoginAsync(LoginRequestModel loginRequest)
         {
-            var user = await userService.GetFirstAsync(_ => _.Username == loginRequest.Username);
+            var user = await Repository.GetByUsername(loginRequest.Username);
             if (user is null)
-                return ResponseDto<LoginResponseModel>.Fail("Invalid username or password!", HttpStatusCode.NotFound);
+                return ReturnFail<LoginResponseModel>("Invalid username or password!", HttpStatusCode.NotFound);
 
             byte[] salt = user.PasswordSalt.ToByteArray();
             var hashedPassword = HashPassword(loginRequest.Password, salt);
             if (hashedPassword != user.HashedPassword)
-                return ResponseDto<LoginResponseModel>.Fail("Invalid username or password!", HttpStatusCode.NotFound);
+                return ReturnFail<LoginResponseModel>("Invalid username or password!", HttpStatusCode.NotFound);
 
             var claims = new Claim[]
             {
@@ -37,7 +38,7 @@ namespace IdentityServer.Api.Business
             var refreshToken = GenerateRefreshToken();
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiry = DateTime.Now.AddDays(2);
-            await userService.SaveChangesAsync();
+            await Repository.SaveChangesAsync();
 
             var response = new LoginResponseModel
             {
@@ -47,14 +48,14 @@ namespace IdentityServer.Api.Business
                 Username = user.Username
             };
 
-            return ResponseDto<LoginResponseModel>.Success(response, HttpStatusCode.OK);
+            return ReturnSuccess(response);
         }
 
         public async Task<ResponseDto<bool>> RegisterAsync(RegisterRequestModel registerModel)
         {
-            var userExists = await userService.GetFirstAsync(u => u.Username == registerModel.UserName);
+            var userExists = await Repository.GetByUsername(registerModel.UserName);
             if (userExists is not null)
-                return ResponseDto<bool>.Fail("User already exists!", HttpStatusCode.BadRequest);
+                return ReturnFail<bool>("User already exists!", HttpStatusCode.BadRequest);
 
             //önce validasyon olmalı, sonra eklenecek
             var passwordSalt = Guid.NewGuid();
@@ -68,11 +69,8 @@ namespace IdentityServer.Api.Business
                 PasswordSalt = passwordSalt,
                 ProfileImage = Path.Combine(Directory.GetCurrentDirectory(), "images/users/profile/default.jpg")
             };
-            await userService.AddAsync(newAppUser);
-            var saveResult = await userService.SaveChangesAsync();
-            return ResponseDto<bool>.GenerateResponse(saveResult != 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail("An error occured while saving!", HttpStatusCode.InternalServerError);
+            await Repository.AddAsync(newAppUser);
+            return await SaveChangesAsync();
         }
 
         public async Task<ResponseDto<LoginResponseModel>> RefreshTokenAsync(RefreshTokenRequestModel request)
@@ -80,12 +78,12 @@ namespace IdentityServer.Api.Business
             var principal = GetPrincipalFromExpiredToken(request.AccessToken);
             var userId = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId is null)
-                return ResponseDto<LoginResponseModel>.Fail("User not found!", HttpStatusCode.BadRequest);
+                return ReturnFail<LoginResponseModel>("User not found!", HttpStatusCode.BadRequest);
 
-            var user = await userService.GetFirstAsync(x => x.Id == int.Parse(userId) && x.RefreshToken == request.RefreshToken);
+            var user = await Repository.GetFirstAsync(x => x.Id == int.Parse(userId) && x.RefreshToken == request.RefreshToken);
 
             if (user is null || user.RefreshTokenExpiry < DateTime.UtcNow)
-                return ResponseDto<LoginResponseModel>.Fail("Expired Token!", HttpStatusCode.BadRequest);
+                return ReturnFail<LoginResponseModel>("Expired Token!", HttpStatusCode.BadRequest);
             var claims = new Claim[]
             {
                 new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -97,7 +95,7 @@ namespace IdentityServer.Api.Business
             var newRefreshToken = GenerateRefreshToken();
 
             user.RefreshToken = newRefreshToken;
-            await userService.SaveChangesAsync();
+            await Repository.SaveChangesAsync();
 
             var response = new LoginResponseModel
             {
@@ -107,7 +105,7 @@ namespace IdentityServer.Api.Business
                 RefreshToken = newRefreshToken
             };
 
-            return ResponseDto<LoginResponseModel>.Success(response, HttpStatusCode.OK);
+            return ReturnSuccess(response);
         }
 
         private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
@@ -138,8 +136,7 @@ namespace IdentityServer.Api.Business
 
             var token = new JwtSecurityToken(claims: claims, expires: expiry, signingCredentials: creds, notBefore: DateTime.Now);
 
-            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return encodedJwt;
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private string GenerateRefreshToken()

@@ -1,12 +1,11 @@
-﻿using BuildingBlocks.Data;
-using BuildingBlocks.Models;
+﻿using BuildingBlocks.Models;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Models;
 
 namespace IdentityServer.Api.Business.Interfaces
 {
-    public interface IUserService : IGenericRepository<AppUser>
+    public interface IUserService
     {
         Task<PaginationResponseModel<AppUser>> GetUsers(UserRequestDto request);
         Task<ResponseDto<AppUser>> GetUserById(int userId);

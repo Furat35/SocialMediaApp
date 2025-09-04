@@ -16,6 +16,12 @@ export const useUserStore = defineStore('user', {
     setUserInfo(loginResponseModel: LoginResponseModel) {
       Object.assign(this.userInfo, loginResponseModel)
     },
+    setAccessToken(accessToken: string) {
+      this.userInfo.accessToken = accessToken
+    },
+    setRefreshToken(refreshToken: string) {
+      this.userInfo.refreshToken = refreshToken
+    },
     logout() {
       this.$reset()
     },

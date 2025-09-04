@@ -12,7 +12,7 @@ namespace Chat.SignalR.Controllers
     public class ChatsController(IHttpContextAccessor httpContextAccessor, ChatDbContext context) : ControllerBase
     {
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetMessages([FromRoute] int userId, [FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<Message>>> GetMessages([FromRoute] int userId, [FromQuery] PaginationRequestModel request)
         {
             var messages = context.Messages
                 .Where(_ => (_.From == httpContextAccessor.GetUserId() && _.To == userId) || (_.From == userId && _.To == httpContextAccessor.GetUserId()));
@@ -31,7 +31,7 @@ namespace Chat.SignalR.Controllers
         }
 
         [HttpPost("lastChats-byUserIds")]
-        public async Task<IActionResult> GetLastChatsByUserIds([FromQuery] PaginationRequestModel request, [FromBody] List<int> userIds)
+        public async Task<ActionResult<PaginationResponseModel<Message>>> GetLastChatsByUserIds([FromQuery] PaginationRequestModel request, [FromBody] List<int> userIds)
         {
             var userId = httpContextAccessor.GetUserId();
             //var messages = await context.Messages
@@ -74,7 +74,7 @@ namespace Chat.SignalR.Controllers
         }
 
         [HttpGet("lastChats")]
-        public async Task<IActionResult> LastChats([FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<Message>>> LastChats([FromQuery] PaginationRequestModel request)
         {
             var userId = httpContextAccessor.GetUserId();
             var messages = await context.Messages

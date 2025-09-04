@@ -8,7 +8,7 @@ namespace BuildingBlocks.Controllers
     public class BaseController : ControllerBase
     {
         [NonAction]
-        public IActionResult CreateActionResult<T>(ResponseDto<T> response)
+        public ActionResult<ResponseDto<T>> CreateActionResult<T>(ResponseDto<T> response)
         {
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
                 return new ObjectResult(null) { StatusCode = (int)response.StatusCode };

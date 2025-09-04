@@ -78,14 +78,12 @@ export default {
 
             try {
                 var response = await this.$axios.post(`/posts`, formData);
-                if (response.data.data && !response.data.isError) toast.success("Update succeded");
-                this.$emit('closeModal');
+                if (response.data.data && response.data.data.isError) toast.success("Update succeded");
             }
             catch (err) {
                 toast.error(response.data.errorMessages || 'Error occured during update');
             }
 
-            // alert('Post created:\n' + JSON.stringify(post, null, 2));
             this.closeModal();
         }
     }

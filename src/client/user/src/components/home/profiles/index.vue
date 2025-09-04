@@ -60,7 +60,7 @@
 
     CommentModal(:selectedPost='selectedPost' v-if='showCommentsModal' @close='showCommentsModal = false')
     LikesModal(:selectedPost='selectedPost' v-if='showLikesModal' @close='showLikesModal = false')
-    FollowersModal(:selectedPost='selectedPost' :userId='userId' v-if='showFollowersModal' @close='showFollowersModal = false')
+    FollowersModal(:userId='userId' v-if='showFollowersModal' @close='showFollowersModal = false')
 
     ViewStoryModal(
       v-if="showStoryModal && story"
@@ -136,6 +136,7 @@ export default {
       if (newVal !== oldVal) {
         Object.assign(this.postsScrollModel, new ScrollModel())
         this.userId = parseInt(newVal)
+        console.log(this.userId)
         this.posts = []
         this.showFollower = false
         this.getFollowStatus()
@@ -304,7 +305,7 @@ export default {
     },
     async setPostImages(postsToUpdate: PostListDto[]) {
       for (const post of postsToUpdate) {
-        const imageResponse = await this.$axios.get(`/posts/image?postId=${post.id}`, {
+        const imageResponse = await this.$axios.get(`/posts/image?postId=${post.id}&followerId=${post.userId}`, {
           responseType: 'blob',
         });
         post.imageUrl = URL.createObjectURL(imageResponse.data);
@@ -316,7 +317,7 @@ export default {
         this.removeLike(post);
         return;
       }
-      var response = await this.$axios.post(`/posts/like?postId=${post.id}`)
+      var response = await this.$axios.post(`/posts/like?postId=${post.id}&followerId=${post.userId}`)
       if (!response.data.isError) {
         var like = new PostLikeListDto({ user: new UserListDto({ id: currentUserId, username: this.useUserStore.getUsername }), postId: post.id });
         post.likes.push(like)
@@ -328,7 +329,7 @@ export default {
     },
     async removeLike(post: PostListDto) {
       var currentUserId = this.useUserStore.getUserId;
-      var response = await this.$axios.post(`/posts/unlike?postId=${post.id}`)
+      var response = await this.$axios.post(`/posts/unlike?postId=${post.id}&followerId=${post.userId}`)
       if (!response.data.isError)
         post.likes = post.likes.filter(_ => _.user.id != currentUserId)
     },

@@ -2,9 +2,10 @@
 using BuildingBlocks.Extensions;
 using BuildingBlocks.Interfaces.Services;
 using BuildingBlocks.Models;
+using BuildingBlocks.Models.Constants;
 using MediatR;
 using Posts.Api.Core.Application.Repositories;
-using System.Net;
+using Posts.Api.Core.Domain.Entities;
 
 namespace Posts.Api.Core.Application.Features.Posts.CreatePost
 {
@@ -13,35 +14,32 @@ namespace Posts.Api.Core.Application.Features.Posts.CreatePost
         IMapper mapper,
         IHttpContextAccessor httpContext,
         IFileService fileService)
-        : IRequestHandler<CreatePostCommandRequest, ResponseDto<CreatePostCommandResponse>>
+        : BaseHandler<IPostRepository, Post>(postRepository),
+            IRequestHandler<CreatePostCommandRequest, ResponseDto<CreatePostCommandResponse>>
     {
         public async Task<ResponseDto<CreatePostCommandResponse>> Handle(CreatePostCommandRequest request, CancellationToken cancellationToken)
         {
-            var post = mapper.Map<Domain.Entities.Post>(request);
+            var post = mapper.Map<Post>(request);
             int result;
             string path = null;
             post.UserId = httpContext.GetUserId();
             try
             {
-                var file = httpContext.HttpContext.Request.Form.Files.FirstOrDefault();
+                var file = httpContext.GetFirstFormFile();
                 path = await fileService.SaveFileAsync(file, "images/users/posts");
                 post.ImagePath = path;
-                await postRepository.AddAsync(post);
-                result = await postRepository.SaveChangesAsync();
+                await _repository.AddAsync(post);
+                result = await _repository.SaveChangesAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 fileService.RemoveFile(path);
-                throw;
+                return ReturnFail<CreatePostCommandResponse>(ErrorMessages.SaveChangesError);
             }
 
-            var response = new CreatePostCommandResponse
-            {
-                Id = post?.Id,
-                Success = result > 0
-            };
+            var response = new CreatePostCommandResponse { Id = post?.Id, Success = result > 0 };
 
-            return ResponseDto<CreatePostCommandResponse>.Success(response, HttpStatusCode.OK);
+            return ReturnSuccess(response);
         }
     }
 }

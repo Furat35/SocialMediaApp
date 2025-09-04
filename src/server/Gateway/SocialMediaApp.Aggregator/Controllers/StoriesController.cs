@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Models;
 using Microsoft.AspNetCore.Mvc;
+using SocialMediaApp.Aggregator.Models.Stories;
 using SocialMediaApp.Aggregator.Services;
 
 namespace SocialMediaApp.Aggregator.Controllers
@@ -8,7 +9,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         : AggregatedBaseController
     {
         [HttpGet]
-        public async Task<IActionResult> GetStories([FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<StoryListDto>>> GetStories([FromQuery] PaginationRequestModel request)
         {
             var storyResponse = await storyService.GetStories(request);
             if (!storyResponse.Data.Any())

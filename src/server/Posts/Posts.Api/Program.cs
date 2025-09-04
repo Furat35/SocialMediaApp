@@ -1,11 +1,13 @@
 using BuildingBlocks.Extensions;
+using BuildingBlocks.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Extensions;
 using Posts.Api.Infrastructure.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddPostsApiServices(builder.Configuration);
+
+
 //builder.Services.AddHttpClientRegistrations(builder.Configuration.Get<cons>);
 
 //builder.Services.AddHttpClient("identityserver.api", async client =>
@@ -14,7 +16,14 @@ builder.Services.AddPostsApiServices(builder.Configuration);
 //    client.BaseAddress = new Uri(identityService);
 //});
 
+builder.Services.AddOpenApiDocument();
+
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi();
+}
 
 try
 {
@@ -27,10 +36,10 @@ catch (Exception ex)
     Console.WriteLine($"Migration failed: {ex.Message}");
 }
 
+app.HandleException();
 app.MapHealthChecks("/health");
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-
-app.AddConsulConfig(lifetime, builder.Configuration);
+lifetime.ApplicationStarted.Register(() => app.AddConsulConfig(lifetime, builder.Configuration));
 
 app.UseAuthentication();
 app.UseAuthorization();

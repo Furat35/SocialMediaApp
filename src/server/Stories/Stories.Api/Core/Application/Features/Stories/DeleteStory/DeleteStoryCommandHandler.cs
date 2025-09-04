@@ -1,9 +1,9 @@
 ﻿using BuildingBlocks.Extensions;
-using BuildingBlocks.Interfaces.Services;
+using BuildingBlocks.Helpers;
 using BuildingBlocks.Models;
-using BuildingBlocks.Models.Constants;
 using MediatR;
 using Stories.Api.Core.Application.Repositories;
+using Stories.Api.Core.Domain.Entities;
 using System.Net;
 
 namespace Stories.Api.Core.Application.Features.Stories.DeleteStory
@@ -11,26 +11,20 @@ namespace Stories.Api.Core.Application.Features.Stories.DeleteStory
     public class DeleteStoryCommandHandler(
         IStoryRepository storyRepository,
         IHttpContextAccessor httpContext)
-        : IRequestHandler<DeleteStoryCommand, ResponseDto<bool>>
+        : BaseHandler<IStoryRepository, Story>(storyRepository),
+            IRequestHandler<DeleteStoryCommand, ResponseDto<bool>>
     {
         public async Task<ResponseDto<bool>> Handle(DeleteStoryCommand request, CancellationToken cancellationToken)
         {
-            var story = await storyRepository.GetByIdAsync(request.StoryId);
-            if (story is null)
-                return ResponseDto<bool>.Fail(ErrorMessages.NotFound, HttpStatusCode.NotFound);
-
-            if (story.UserId != httpContext.GetUserId())
-                return ResponseDto<bool>.Fail(ErrorMessages.Forbidden, HttpStatusCode.Forbidden);
+            var story = await storyRepository
+                .GetFirstAsync(_ => _.UserId == httpContext.GetUserId() && _.Id == request.StoryId && _.IsValid);
+            if (story is null) return HttpStatusCode.NotFound.ToResponse<bool>();
 
             //fileService.RemoveFile(story.ImagePath);
-            storyRepository.Remove(story);
-
+            //storyRepository.Remove(story);
             story.IsValid = false;
 
-            return ResponseDto<bool>.GenerateResponse(await storyRepository.SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail(ErrorMessages.DeleteError, HttpStatusCode.InternalServerError);
-
+            return await SaveChangesAsync();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Models;
+﻿using BuildingBlocks.CustomExceptions;
 using BuildingBlocks.Models.Constants;
 using MediatR;
 using Stories.Api.ExternalServices;
@@ -19,10 +19,10 @@ namespace Stories.Api.Behaviours
         {
             if (request is IRequiresFollowCheck followRequest)
             {
-                var isFollowing = await followerService.IsFollowing(followRequest.FollowerId);
-                if (!isFollowing)
+                var hasAccess = await followerService.HasAccessTo(followRequest.FollowerId);
+                if (!hasAccess)
                 {
-                    return (ResponseDto<object>.Fail(null, ErrorMessages.Forbidden, HttpStatusCode.Forbidden) as TResponse)!;
+                    throw new ForbiddenException(ErrorMessages.Forbidden, HttpStatusCode.Forbidden);
                 }
             }
 

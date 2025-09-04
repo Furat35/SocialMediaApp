@@ -4,45 +4,51 @@ using IdentityServer.Api.Business.Dtos.Followers;
 using IdentityServer.Api.Business.Interfaces;
 using IdentityServer.Api.Core.Domain.Entities;
 using IdentityServer.Api.Core.Domain.Enums;
-using IdentityServer.Api.Data.Context;
 using IdentityServer.Api.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace IdentityServer.Api.Business
 {
-    public class FollowerService(IdentityDbContext dbContext, IHttpContextAccessor httpContext)
-        : FollowerRepository(dbContext, httpContext), IFollowerService
+    public class FollowerService(
+        IFollowerRepository followerRepository,
+        IHttpContextAccessor httpContext)
+        : BaseService<IFollowerRepository, Follower>(followerRepository), IFollowerService
     {
+        public async Task<bool> IsFollowing(int userId1, int userId2)
+        {
+            return await Repository.Get(_ => _.Status == FollowStatus.Following && _.IsValid &&
+                (_.RequestingUserId == userId1 && _.RespondingUserId == userId2 ||
+                 _.RequestingUserId == userId2 && _.RespondingUserId == userId1))
+                .AnyAsync();
+        }
+
+        public async Task<bool> ActiveUserHasAccessToGivenUser(int userId)
+        {
+            var isFollowing = await IsFollowing(userId, httpContext.GetUserId());
+            return httpContext.GetUserId() == userId || isFollowing;
+        }
+
         public async Task<ResponseDto<bool>> Unfollow(int userId)
         {
-            var follower = await Get(f => (f.RequestingUserId == userId && f.RespondingUserId == httpContext.GetUserId() && f.Status == FollowStatus.Following) ||
-                     (f.RespondingUserId == userId && f.RequestingUserId == httpContext.GetUserId()) && f.Status == FollowStatus.Following)
-             .FirstOrDefaultAsync();
+            var follower = await Repository.GetFollowerByIdAsync(userId);
             if (follower is null)
-                return ResponseDto<bool>.Fail("Follow does not exist.", HttpStatusCode.BadRequest);
+                return ToResponse<bool>(HttpStatusCode.NotFound);
 
             follower.IsValid = false;
-            return ResponseDto<bool>
-              .GenerateResponse(await SaveChangesAsync() > 0)
-              .Success(true, HttpStatusCode.OK)
-              .Fail("An error occured while deleting the Follow", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
         public async Task<ResponseDto<bool>> SendFollowRequest(int userId)
         {
             if (userId == httpContext.GetUserId())
-                return ResponseDto<bool>.Fail("You cannot send a Follow request to yourself.", HttpStatusCode.BadRequest);
-            var followExists = await Get(f => ((f.RequestingUserId == httpContext.GetUserId() && f.RespondingUserId == userId) ||
-                          (f.RequestingUserId == userId && f.RespondingUserId == httpContext.GetUserId())) &&
-                          f.IsValid)
-                .OrderByDescending(_ => _.CreateDate)
-                .FirstOrDefaultAsync();
+                return ReturnFail<bool>("You cannot send a Follow request to yourself.", HttpStatusCode.BadRequest);
+            var followExists = await Repository.FollowExistsAsync(userId);
 
-            var result = await CheckFollowStatus(followExists);
-            if (!result.isValid) return ResponseDto<bool>.Fail(result.message, HttpStatusCode.BadRequest);
+            var result = CheckFollowStatus(followExists);
+            if (!result.isValid) return ToResponse<bool>(HttpStatusCode.BadRequest);
 
-            await AddAsync(
+            await Repository.AddAsync(
                 new Follower
                 {
                     RequestingUserId = httpContext.GetUserId(),
@@ -51,13 +57,10 @@ namespace IdentityServer.Api.Business
                     IsValid = true
                 });
 
-            return ResponseDto<bool>
-                .GenerateResponse(await SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.Created)
-                .Fail("An error occured while sending the Follow request", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
-        public async Task<(bool isValid, string? message)> CheckFollowStatus(Follower follower)
+        public (bool isValid, string? message) CheckFollowStatus(Follower follower)
         {
             if (follower is not null)
             {
@@ -84,24 +87,18 @@ namespace IdentityServer.Api.Business
 
         public async Task<ResponseDto<bool>> RemoveBan(int userId)
         {
-            var follower = await Get(_ => (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == userId)
-                    && _.IsValid && _.Status == FollowStatus.Banned)
-              .FirstOrDefaultAsync();
-
-            if (follower is null)
-                return ResponseDto<bool>.Fail("Ban does not exist.", HttpStatusCode.BadRequest);
+            var follower = await Repository.GetFollowerWithGivenStatusAsync(httpContext.GetUserId(), userId, FollowStatus.Banned);
+            if (follower is null) return ToResponse<bool>(HttpStatusCode.BadRequest);
 
             follower.IsValid = false;
-            return ResponseDto<bool>
-                .GenerateResponse(await SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail("An error occured while accepting the Follow request", HttpStatusCode.InternalServerError);
+
+            return await SaveChangesAsync();
         }
 
 
         public async Task<ResponseDto<FollowerListDto>> GetFollowStatus(int userId)
         {
-            var follower = await Get(_ => ((_.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId()) ||
+            var follower = await Repository.Get(_ => ((_.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId()) ||
                      (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == userId)) &&
                       _.IsValid)
                .OrderByDescending(_ => _.CreateDate)
@@ -123,12 +120,12 @@ namespace IdentityServer.Api.Business
                 CreateDate = null
             };
 
-            return ResponseDto<FollowerListDto>.Success(follower, HttpStatusCode.OK);
+            return ReturnSuccess(follower, HttpStatusCode.OK);
         }
 
         public async Task<PaginationResponseModel<FollowerListDto>> GetFollowRequests(PaginationRequestModel request)
         {
-            var followerResponse = Get(_ => _.Status == FollowStatus.Pending && _.RespondingUserId == httpContext.GetUserId() && _.IsValid)
+            var followerResponse = Repository.Get(_ => _.Status == FollowStatus.Pending && _.RespondingUserId == httpContext.GetUserId() && _.IsValid)
                .Select(_ => new FollowerListDto
                {
                    Id = _.Id,
@@ -147,7 +144,6 @@ namespace IdentityServer.Api.Business
                 .Take(request.PageSize)
                 .ToListAsync();
 
-            //var mappedData = mapper.Map<List<FollowerListDto>>(response);
             var paginationModel = new PaginationResponseModel<FollowerListDto>(request.Page, request.PageSize, pageCount, totalfollowRequests, response);
 
             return paginationModel;
@@ -156,7 +152,7 @@ namespace IdentityServer.Api.Business
         public async Task<PaginationResponseModel<FollowerListDto>> GetFollowersByUserIds(PaginationRequestModel request, List<int> UserIds)
         {
             var userIds = UserIds.Distinct().Except([httpContext.GetUserId()]).ToList();
-            var followers = Get(_ => ((userIds.Contains(_.RequestingUserId) && _.RespondingUserId == httpContext.GetUserId()) ||
+            var followers = Repository.Get(_ => ((userIds.Contains(_.RequestingUserId) && _.RespondingUserId == httpContext.GetUserId()) ||
                             (userIds.Contains(_.RespondingUserId) && _.RequestingUserId == httpContext.GetUserId())) &&
                             _.Status == FollowStatus.Following && _.IsValid)
                         .Select(_ => new FollowerListDto
@@ -182,7 +178,7 @@ namespace IdentityServer.Api.Business
 
         public async Task<PaginationResponseModel<FollowerListDto>> GetFollowersByUserId(int userId, FollowStatus status, PaginationRequestModel request)
         {
-            var followers = Get(_ => (_.RequestingUserId == userId || _.RespondingUserId == userId) &&
+            var followers = Repository.Get(_ => (_.RequestingUserId == userId || _.RespondingUserId == userId) &&
                          _.Status == status && _.IsValid)
                     .OrderByDescending(_ => _.CreateDate)
                     .Select(_ => new FollowerListDto
@@ -208,54 +204,41 @@ namespace IdentityServer.Api.Business
 
         public async Task<ResponseDto<List<int>>> GetFollowerIds()
         {
-            var followerIds = await Get(_ => (_.RequestingUserId == httpContext.GetUserId() || _.RespondingUserId == httpContext.GetUserId())
+            var followerIds = await Repository.Get(_ => (_.RequestingUserId == httpContext.GetUserId() || _.RespondingUserId == httpContext.GetUserId())
                                   && _.IsValid && _.Status == FollowStatus.Following)
                   .Select(_ => _.RequestingUserId == httpContext.GetUserId() ? _.RespondingUserId : _.RequestingUserId)
                   .ToListAsync();
 
-            return ResponseDto<List<int>>.Success(followerIds, HttpStatusCode.OK);
+            return ReturnSuccess(followerIds, HttpStatusCode.OK);
         }
 
-        public async Task<int> GetFollowersCount()
+        public async Task<int> GetFollowersCount(int userId)
         {
-            var followerCount = await Get(_ => (_.RequestingUserId == httpContext.GetUserId() ||
-                       _.RespondingUserId == httpContext.GetUserId()) &&
-                       _.IsValid && _.Status == FollowStatus.Following)
-                   .CountAsync();
-
+            var followerCount = await Repository.GetFollowersCountAsync(userId);
             return followerCount;
         }
 
 
         public async Task<ResponseDto<bool>> AcceptFollowRequest(int userId)
         {
-            var follow = await
-                Get(f => f.RequestingUserId == userId && f.RespondingUserId == httpContext.GetUserId() &&
-                    f.Status == FollowStatus.Pending && f.IsValid)
-                .FirstOrDefaultAsync();
-            if (follow is null)
-                return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
-
-            if (follow.Status == FollowStatus.Following)
-                return ResponseDto<bool>.Fail("Is already following.", HttpStatusCode.BadRequest);
+            var follow = await Repository.GetFollowerWithGivenStatusAsync(userId, httpContext.GetUserId(), FollowStatus.Pending);
+            if (follow is null || follow.Status == FollowStatus.Following)
+                return ToResponse<bool>(HttpStatusCode.NotFound);
 
             follow.Status = FollowStatus.Following;
 
-            return ResponseDto<bool>
-             .GenerateResponse(await SaveChangesAsync() > 0)
-             .Success(true, HttpStatusCode.OK)
-             .Fail("An error occured while accepting the Follow request", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
         public async Task<ResponseDto<bool>> BanFollower(int userId)
         {
-            var follower = await Get(_ => ((_.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId()) ||
+            var follower = await Repository.Get(_ => ((_.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId()) ||
                                    (_.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == userId)) &&
                                     _.IsValid).FirstOrDefaultAsync();
 
             if (follower is not null) follower.IsValid = false;
 
-            await AddAsync(
+            await Repository.AddAsync(
                 new Follower
                 {
                     RequestingUserId = httpContext.GetUserId(),
@@ -264,43 +247,31 @@ namespace IdentityServer.Api.Business
                     IsValid = true
                 });
 
-            return ResponseDto<bool>
-                .GenerateResponse(await SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail("An error occured while accepting the Follow request", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
         public async Task<ResponseDto<bool>> CancelFollowRequest(int userId)
         {
-            var follow = await Get(_ => _.RequestingUserId == httpContext.GetUserId() && _.RespondingUserId == userId &&
-                      _.Status == FollowStatus.Pending && _.IsValid).FirstOrDefaultAsync();
-            if (follow is null)
-                return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
+            var follow = await Repository.GetFollowerWithGivenStatusAsync(httpContext.GetUserId(), userId, FollowStatus.Pending);
+            if (follow is null) return ToResponse<bool>(HttpStatusCode.NotFound);
 
             follow.Status = FollowStatus.Cancelled;
             follow.IsValid = false;
 
-            return ResponseDto<bool>
-                .GenerateResponse(await SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail("An error occured while canceling the Follow request", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
         public async Task<ResponseDto<bool>> DeclineFollowRequest(int userId)
         {
-            var follow = await Get(_ => _.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId() &&
+            var follow = await Repository.Get(_ => _.RequestingUserId == userId && _.RespondingUserId == httpContext.GetUserId() &&
                    _.Status == FollowStatus.Pending && _.IsValid)
                .FirstOrDefaultAsync();
-            if (follow is null)
-                return ResponseDto<bool>.Fail("Follow request does not exist.", HttpStatusCode.BadRequest);
+            if (follow is null) return ToResponse<bool>(HttpStatusCode.NotFound);
 
             follow.Status = FollowStatus.Declined;
             follow.IsValid = false;
 
-            return ResponseDto<bool>
-             .GenerateResponse(await SaveChangesAsync() > 0)
-             .Success(true, HttpStatusCode.OK)
-             .Fail("An error occured while sending the Follow request", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
     }
 }

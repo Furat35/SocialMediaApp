@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Helpers;
 using BuildingBlocks.Interfaces.Services;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Behaviours;
@@ -15,6 +16,7 @@ namespace Posts.Api.Extensions
         {
             services.AddControllers();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(FollowerAuthorizationBehavior<,>));
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             services.AddTransient<BearerTokenHandler>();
             services.AddHttpClient("default")
                 .AddHttpMessageHandler<BearerTokenHandler>();
@@ -22,6 +24,7 @@ namespace Posts.Api.Extensions
             services.ConfigureConsul(configuration);
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddAutoMapper(typeof(Program).Assembly);
+            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddHealthChecks();
             services.AddHttpContextAccessor();
             services.AddAllServices([Assembly.GetExecutingAssembly(), Assembly.GetAssembly(typeof(IFileService))]);

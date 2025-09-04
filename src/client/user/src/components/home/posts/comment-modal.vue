@@ -2,6 +2,19 @@
     .comments-modal-backdrop(@click.self='closeCommentsModal')
       .comments-modal
         button.close-modal-btn(@click='closeCommentsModal' aria-label='Close') &times;
+        button.post-settings-modal-btn(
+            v-if="selectedPost && selectedPost.userId === useUserStore.getUserId"
+            @click="showMenu = !showMenu"
+            aria-label="Open menu"
+        )  ...
+        div.post-settings-modal(
+            v-if="showMenu"
+            @click.self="showMenu = false"
+            class="mb-2"
+            style="height: 50px"
+        )
+            ul.post-settings-list
+                li.post-settings-item(@click="removePost(selectedPost.id); showMenu = false") Remove Post
         .post-image
           img(:src='`${selectedPost.imageUrl}`' alt='post')
         .comments-panel(v-if='selectedPost')
@@ -15,6 +28,10 @@
                 | {{ comment.createDate.toLocaleDateString(&apos;en-En&apos;) }}
                 span(@click='deleteComment(comment)' style='cursor:pointer' class='ms-2 text-danger' v-if='comment.user.id == useUserStore.getUserId') Delete
               hr
+          div(class='mb-2')
+            span(style='font-weight:bold;cursor:pointer' class='me-2'  @click='goToProfile(selectedPost.userId)') {{ selectedPost.user.fullname }} 
+            span(style='text-align:justify') {{ selectedPost.description }}
+            span(class='ms-auto d-block text-end').text-muted.small.mt-1 {{ selectedPost.createDate.toLocaleDateString(&apos;en-En&apos;) }}
           .add-comment
             input(v-model='newComment' @keyup.enter='addComment' type='text' placeholder='Add a comment...')
             button(@click='addComment' :disabled='!newComment.trim()') Post
@@ -39,6 +56,7 @@ export default {
             newComment: '',
             gatewayUrl: import.meta.env.VITE_GatewayUrl,
             useUserStore: useUserStore(),
+            showMenu: false
         }
     },
     methods: {
@@ -55,6 +73,19 @@ export default {
                 }))
                 this.newComment = '';
             }
+        },
+        async removePost(postId: number) {
+            var response = await this.$axios.delete(`/posts?Id=${postId}`,
+                {
+                    params: {
+                        Id: postId
+                    }
+                }
+            )
+            if (!response.data.isError) {
+                this.$emit('postRemoved', postId);
+            }
+            this.showMenu = false;
         },
         async deleteComment(comment: PostCommentListDto) {
             var response = await this.$axios.post(`/posts/remove-comment?postId=${comment.postId}&commentId=${comment.id}&followerId=${comment.user.id}`);
@@ -88,5 +119,52 @@ export default {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
+}
+
+.post-settings-modal-btn {
+    position: absolute;
+    top: 0px;
+    right: 50px;
+    background: transparent;
+    border: none;
+    font-size: 30px;
+    color: #888;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.post-settings-modal-btn :hover {
+    color: #222;
+}
+
+.post-settings-modal {
+    position: absolute;
+    top: 50px;
+    right: 56px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+    max-width: 160px;
+    z-index: 20;
+}
+
+.post-settings-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.post-settings-item {
+    padding: 1rem;
+    cursor: pointer;
+    color: #0c0403;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.post-settings-item:hover {
+    background: #f7f7f7;
 }
 </style>

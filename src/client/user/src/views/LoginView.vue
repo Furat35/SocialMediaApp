@@ -29,7 +29,7 @@ export default {
   name: 'LoginView',
   data() {
     return {
-      loginModel: new LoginRequestModel(),
+      loginModel: new LoginRequestModel()
     }
   },
   methods: {
@@ -42,17 +42,16 @@ export default {
             toast.success("Login succeded");
             useUserStore().setUserInfo(response.data.data as LoginResponseModel)
             this.$router.push({ name: 'main-page' });
+            this.$bus.emit('login-succeded');
           } else {
+            this.refreshTokenErrorCount++;
             toast.error(response.data.errorMessages || 'Login failed');
           }
-          nextTick(() => {
-            this.$bus.emit('isBusy', false);
-          });
         })
         .catch(error => {
-          this.$bus.emit('isBusy', false);
           toast.error(error.response?.data?.errorMessages[0] || 'Error occured during login');
-        });
+        })
+        .finally(f => nextTick(() => this.$bus.emit('isBusy', false)));
     }
   },
 }

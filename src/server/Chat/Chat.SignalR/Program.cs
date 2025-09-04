@@ -8,11 +8,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddChatServices(builder.Configuration);
 
+builder.Services.AddOpenApiDocument();
+
 var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi();
+}
 
 app.MapHealthChecks("/health");
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-app.AddConsulConfig(lifetime, builder.Configuration);
+lifetime.ApplicationStarted.Register(() => app.AddConsulConfig(lifetime, builder.Configuration));
 
 try
 {

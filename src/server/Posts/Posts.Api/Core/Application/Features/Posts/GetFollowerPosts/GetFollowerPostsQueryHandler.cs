@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Core.Application.Dtos.Posts;
 using Posts.Api.Core.Application.Repositories;
+using Posts.Api.Core.Domain.Entities;
 using Posts.Api.ExternalServices;
 
 namespace Posts.Api.Core.Application.Features.Posts.GetFollowerPosts
@@ -12,13 +13,14 @@ namespace Posts.Api.Core.Application.Features.Posts.GetFollowerPosts
         IPostRepository postRepository,
         IFollowerService followerService,
         IMapper mapper)
-        : IRequestHandler<GetFollowerPostsQuery, PaginationResponseModel<PostListDto>>
+        : BaseHandler<IPostRepository, Post>(postRepository),
+            IRequestHandler<GetFollowerPostsQuery, PaginationResponseModel<PostListDto>>
     {
         public async Task<PaginationResponseModel<PostListDto>> Handle(GetFollowerPostsQuery request, CancellationToken cancellationToken)
         {
             var followerResponse = await followerService.GetFollowerIdsAsync();
 
-            var userPosts = postRepository
+            var userPosts = _repository
                 .Get(_ => _.IsValid, includes: [i => i.Likes, i => i.Comments])
                 .OrderByDescending(_ => _.CreateDate)
                 .Join(

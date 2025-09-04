@@ -11,7 +11,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         : AggregatedBaseController
     {
         [HttpGet]
-        public async Task<IActionResult> GetLastUserChats([FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<MessageListDto>>> GetLastUserChats([FromQuery] PaginationRequestModel request)
         {
             var chatResponse = await chatService.GetLastChats(request);
 
@@ -27,7 +27,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpPost("lastChats-byUserIds")]
-        public async Task<IActionResult> GetLastUserChatsByUsername([FromQuery] PaginationRequestModel request,
+        public async Task<ActionResult<PaginationResponseModel<MessageListDto>>> GetLastUserChatsByUsername([FromQuery] PaginationRequestModel request,
             [FromQuery] string searchKey)
         {
             var userResponse = await userService.SearchUserAsync(searchKey);

@@ -23,9 +23,9 @@ namespace Stories.Api.ExternalServices
             return (await content.Content.ReadFromJsonAsync<ResponseDto<List<int>>>()).Data;
         }
 
-        public async Task<bool> IsFollowing(int userId)
+        public async Task<bool> HasAccessTo(int userId)
         {
-            var content = await _httpClient.GetAsync($"api/followers/isFollowing?userId={userId}");
+            var content = await _httpClient.GetAsync($"api/followers/hasAccessTo?userId={userId}");
             return await content.Content.ReadFromJsonAsync<bool>();
         }
     }
@@ -33,6 +33,6 @@ namespace Stories.Api.ExternalServices
     public interface IFollowerService
     {
         Task<List<int>> GetFollowerIdsAsync();
-        Task<bool> IsFollowing(int userId);
+        Task<bool> HasAccessTo(int userId);
     }
 }

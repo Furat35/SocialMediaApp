@@ -7,6 +7,5 @@ namespace Stories.Api.Infrastructure.Repositories
     public class StoryRepository(StoryDbContext dbContext)
         : GenericRepository<Story, StoryDbContext>(dbContext), IStoryRepository
     {
-
     }
 }

@@ -1,6 +1,8 @@
 ﻿using BuildingBlocks.Controllers;
+using BuildingBlocks.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Stories.Api.Core.Application.Dtos.Stories;
 using Stories.Api.Core.Application.Features.Stories.CreateStory;
 using Stories.Api.Core.Application.Features.Stories.DeleteStory;
 using Stories.Api.Core.Application.Features.Stories.GetStories;
@@ -12,28 +14,28 @@ namespace Stories.Api.Controllers
     public class StoriesController(IMediator mediator) : BaseController
     {
         [HttpPost]
-        public async Task<IActionResult> Create([FromQuery] CreateStoryCommand request)
+        public async Task<ActionResult<ResponseDto<StoryListDto>>> Create([FromQuery] CreateStoryCommand request)
         {
             var result = await mediator.Send(request);
             return CreateActionResult(result);
         }
 
         [HttpDelete]
-        public async Task<IActionResult> Delete([FromQuery] DeleteStoryCommand request)
+        public async Task<ActionResult<ResponseDto<bool>>> Delete([FromQuery] DeleteStoryCommand request)
         {
             var result = await mediator.Send(request);
             return CreateActionResult(result);
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStories([FromQuery] GetStoriesQuery request)
+        public async Task<ActionResult<PaginationResponseModel<List<StoryListDto>>>> GetStories([FromQuery] GetStoriesQuery request)
         {
             var result = await mediator.Send(request);
             return Ok(result);
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetByUserId([FromRoute] GetStoryByUserIdQuery request)
+        public async Task<ActionResult<ResponseDto<List<StoryListDto>>>> GetByUserId([FromRoute] GetStoryByUserIdQuery request)
         {
             var result = await mediator.Send(request);
             return CreateActionResult(result);

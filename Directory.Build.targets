@@ -1,0 +1,5 @@
+<Project>
+  <Target Name="NSwag" AfterTargets="Build" Condition=" '$(GenerateNSwagClient)' == 'true' ">
+    <Exec Command="dotnet nswag run $(SolutionDir)/src/server/Shared/BuildingBlocks/nswag.json /variables:projectName=$(MSBuildProjectDirectory),outputPath=$(SolutionDir)/src/client/src/backendClients/$(MSBuildProjectName)Client.ts" />
+  </Target>
+</Project>

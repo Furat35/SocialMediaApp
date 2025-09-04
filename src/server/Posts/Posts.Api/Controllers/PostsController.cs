@@ -1,7 +1,9 @@
 using BuildingBlocks.Controllers;
+using BuildingBlocks.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Posts.Api.Core.Application.Dtos.Posts;
 using Posts.Api.Core.Application.Features.Posts.CreatePost;
 using Posts.Api.Core.Application.Features.Posts.CreatePostComment;
 using Posts.Api.Core.Application.Features.Posts.DeletePost;
@@ -18,22 +20,15 @@ namespace Posts.Api.Controllers
     [Authorize]
     public class PostsController(IMediator mediatr) : BaseController
     {
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetPostById([FromQuery] GetPostByIdQuery request)
-        //{
-        //    var response = await mediatr.Send(request);
-        //    return CreateActionResult(response);
-        //}
-
         [HttpGet]
-        public async Task<IActionResult> GetPostsByUserId([FromQuery] GetPostsByUserIdQuery request)
+        public async Task<ActionResult<PaginationResponseModel<PostListDto>>> GetPostsByUserId([FromQuery] GetPostsByUserIdQuery request)
         {
             var response = await mediatr.Send(request);
             return Ok(response);
         }
 
         [HttpGet("follower-posts")]
-        public async Task<IActionResult> GetFollowerPosts([FromQuery] GetFollowerPostsQuery request)
+        public async Task<ActionResult<PaginationResponseModel<PostListDto>>> GetFollowerPosts([FromQuery] GetFollowerPostsQuery request)
         {
             var response = await mediatr.Send(request);
             return Ok(response);
@@ -46,51 +41,50 @@ namespace Posts.Api.Controllers
             return File(response.image, response.fileType);
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdatePost(UpdatePostCommand request)
-        {
-            var response = await mediatr.Send(request);
-            return CreateActionResult(response);
-        }
-
-        [HttpDelete]
-        public async Task<IActionResult> DeletePost([FromQuery] DeletePostCommand request)
-        {
-            var response = await mediatr.Send(request);
-            return CreateActionResult(response);
-        }
-
-
         [HttpPost]
-        public async Task<IActionResult> CreatePost([FromForm] CreatePostCommandRequest request)
+        public async Task<ActionResult<ResponseDto<CreatePostCommandResponse>>> CreatePost([FromForm] CreatePostCommandRequest request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);
         }
 
         [HttpPost("like")]
-        public async Task<IActionResult> LikePost([FromQuery] LikePostCommand request)
+        public async Task<ActionResult<ResponseDto<bool>>> LikePost([FromQuery] LikePostCommand request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);
         }
 
         [HttpPost("unlike")]
-        public async Task<IActionResult> UnlikePost([FromQuery] UnlikePostCommand request)
+        public async Task<ActionResult<ResponseDto<bool>>> UnlikePost([FromQuery] UnlikePostCommand request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);
         }
 
         [HttpPost("add-comment")]
-        public async Task<IActionResult> AddPostComment([FromQuery] CreatePostCommentCommand request)
+        public async Task<ActionResult<ResponseDto<bool>>> AddPostComment([FromQuery] CreatePostCommentCommand request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);
         }
 
         [HttpPost("remove-comment")]
-        public async Task<IActionResult> RemovePostComment([FromQuery] RemovePostCommentCommand request)
+        public async Task<ActionResult<ResponseDto<bool>>> RemovePostComment([FromQuery] RemovePostCommentCommand request)
+        {
+            var response = await mediatr.Send(request);
+            return CreateActionResult(response);
+        }
+
+        [HttpDelete]
+        public async Task<ActionResult<ResponseDto<bool>>> DeletePost([FromQuery] DeletePostCommand request)
+        {
+            var response = await mediatr.Send(request);
+            return CreateActionResult(response);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<ResponseDto<bool>>> UpdatePost(UpdatePostCommand request)
         {
             var response = await mediatr.Send(request);
             return CreateActionResult(response);

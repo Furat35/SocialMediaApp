@@ -4,23 +4,50 @@ using IdentityServer.Api.Core.Domain.Entities;
 using IdentityServer.Api.Core.Domain.Enums;
 using IdentityServer.Api.Data.Context;
 using Microsoft.EntityFrameworkCore;
-
 namespace IdentityServer.Api.Infrastructure.Repositories
 {
-    public class FollowerRepository(IdentityDbContext context, IHttpContextAccessor httpContext) : GenericRepository<Follower, IdentityDbContext>(context)
+    public class FollowerRepository(IdentityDbContext context, IHttpContextAccessor httpContext)
+        : GenericRepository<Follower, IdentityDbContext>(context), IFollowerRepository
     {
-        public async Task<bool> IsFollowing(int userId1, int userId2)
+        public async Task<Follower?> GetFollowerByIdAsync(int userId)
         {
-            return await Get(_ => _.Status == FollowStatus.Following && _.IsValid &&
-                (_.RequestingUserId == userId1 && _.RespondingUserId == userId2 ||
-                 _.RequestingUserId == userId2 && _.RespondingUserId == userId1))
-                .AnyAsync();
+            return await Get(f =>
+                (f.RequestingUserId == userId && f.RespondingUserId == httpContext.GetUserId() ||
+                    f.RespondingUserId == userId && f.RequestingUserId == httpContext.GetUserId()) &&
+                    f.Status == FollowStatus.Following && f.IsValid)
+             .FirstOrDefaultAsync();
         }
 
-        public async Task<bool> ActiveUserHasAccessToGivenUser(int userId)
+        public async Task<int> GetFollowersCountAsync(int userId)
         {
-            var isFollowing = await IsFollowing(userId, httpContext.GetUserId());
-            return httpContext.GetUserId() == userId || isFollowing;
+            return await Get(_ => (_.RequestingUserId == userId ||
+                       _.RespondingUserId == userId) &&
+                       _.IsValid && _.Status == FollowStatus.Following)
+                   .CountAsync();
         }
+        public async Task<Follower> GetFollowerWithGivenStatusAsync(int requestingUserId, int respondingUserId, FollowStatus status)
+        {
+            return await Get(_ => _.RequestingUserId == requestingUserId && _.RespondingUserId == respondingUserId &&
+                   _.Status == status && _.IsValid)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Follower?> FollowExistsAsync(int userId)
+        {
+            return await Get(f =>
+                           ((f.RequestingUserId == httpContext.GetUserId() && f.RespondingUserId == userId) ||
+                            (f.RequestingUserId == userId && f.RespondingUserId == httpContext.GetUserId())) &&
+                            f.IsValid)
+                .OrderByDescending(_ => _.CreateDate)
+                .FirstOrDefaultAsync();
+        }
+    }
+
+    public interface IFollowerRepository : IGenericRepository<Follower>
+    {
+        Task<Follower?> GetFollowerByIdAsync(int id);
+        Task<int> GetFollowersCountAsync(int userId);
+        Task<Follower> GetFollowerWithGivenStatusAsync(int requestingUserId, int respondingUserId, FollowStatus status);
+        Task<Follower?> FollowExistsAsync(int userId);
     }
 }

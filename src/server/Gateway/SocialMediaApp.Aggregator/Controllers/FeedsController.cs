@@ -1,5 +1,6 @@
 ﻿using BuildingBlocks.Models;
 using Microsoft.AspNetCore.Mvc;
+using SocialMediaApp.Aggregator.Models.Posts;
 using SocialMediaApp.Aggregator.Services;
 
 namespace SocialMediaApp.Aggregator.Controllers
@@ -8,7 +9,7 @@ namespace SocialMediaApp.Aggregator.Controllers
     {
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserPosts([FromRoute] int userId, [FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<PostListDto>>> GetUserPosts([FromRoute] int userId, [FromQuery] PaginationRequestModel request)
         {
             var postsResponse = await postService.GetPostsByUserId(request, userId);
 
@@ -45,7 +46,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFollowerPosts([FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<PostListDto>>> GetFollowerPosts([FromQuery] PaginationRequestModel request)
         {
             //var identityServiceUrl = await consulClient.ResolveServiceUrl("identityserver.api");
             //var followersResponse = await httpClient.GetFromJsonAsync<PaginationResponseModel<FollowerListDto>>($"{identityServiceUrl}/api/followers/ids");

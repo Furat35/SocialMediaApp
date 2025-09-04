@@ -1,6 +1,7 @@
 ﻿using BuildingBlocks.Extensions;
 using BuildingBlocks.Models;
 using Microsoft.AspNetCore.Mvc;
+using SocialMediaApp.Aggregator.Models.Followers;
 using SocialMediaApp.Aggregator.Services;
 
 namespace SocialMediaApp.Aggregator.Controllers
@@ -11,7 +12,7 @@ namespace SocialMediaApp.Aggregator.Controllers
     {
 
         [HttpGet("follow-requests")]
-        public async Task<IActionResult> GetFollowRequests([FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<FollowerListDto>>> GetFollowRequests([FromQuery] PaginationRequestModel request)
         {
             var followResponse = await followerService.GetFollowRequestsAsync(request);
 
@@ -27,7 +28,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpGet("byUser")]
-        public async Task<IActionResult> GetFollowersByUserId([FromQuery] int userId, [FromQuery] int status, [FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<FollowerListDto>>> GetFollowersByUserId([FromQuery] int userId, [FromQuery] int status, [FromQuery] PaginationRequestModel request)
         {
             var followersResponse = await followerService.GetFollowersByUserIdAsync(request, userId, status);
 
@@ -44,7 +45,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetFollowerPosts([FromQuery] int userId, [FromQuery] int status, [FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<FollowerListDto>>> GetFollowerPosts([FromQuery] int userId, [FromQuery] int status, [FromQuery] PaginationRequestModel request)
         {
             var followersResponse = await followerService.GetFollowersByUserIdAsync(request, userId, status);
 
@@ -61,7 +62,7 @@ namespace SocialMediaApp.Aggregator.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> SearchFollowers([FromQuery] string searchKey, [FromQuery] PaginationRequestModel request)
+        public async Task<ActionResult<PaginationResponseModel<FollowerListDto>>> SearchFollowers([FromQuery] string searchKey, [FromQuery] PaginationRequestModel request)
         {
             var userResponse = await userService.SearchUserAsync(searchKey);
 

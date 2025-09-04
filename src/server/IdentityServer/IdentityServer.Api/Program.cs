@@ -2,14 +2,24 @@ using BuildingBlocks.Extensions;
 using IdentityServer.Api.Data.Context;
 using IdentityServer.Api.Extensions;
 using Microsoft.EntityFrameworkCore;
+using BuildingBlocks.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddIdentityServices(builder.Configuration);
 
-var app = builder.Build();
+builder.Services.AddOpenApiDocument();
 
+var app = builder.Build();
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi();
+}
+
+
+app.HandleException();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -26,7 +36,7 @@ catch (Exception ex)
 
 app.MapHealthChecks("/health");
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-app.AddConsulConfig(lifetime, builder.Configuration);
+lifetime.ApplicationStarted.Register(() => app.AddConsulConfig(lifetime, builder.Configuration));
 
 app.MapControllers();
 

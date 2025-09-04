@@ -73,6 +73,8 @@ namespace BuildingBlocks.Data
                 query = query.Include(include);
             }
 
+            query = query.Where(expression);
+
             return await query.FirstOrDefaultAsync(expression);
 
         }

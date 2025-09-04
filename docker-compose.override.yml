@@ -25,7 +25,7 @@ services:
   gateway.api:
     container_name: gateway.api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8000
       - "GlobalConfiguration__BaseUrl=http://gateway.api:8000"
       - "GlobalConfiguration__ServiceDiscoveryProvider__Host=consul_socialmedia"
@@ -44,7 +44,7 @@ services:
   identityserver.api:
     container_name: identityserver.api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8001
       - ConnectionStrings__IdentityDb=Server=sqlserver_socialmedia,1433;Database=IdentityDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
       - ConsulConfig__Host=http://consul_socialmedia
@@ -61,7 +61,7 @@ services:
 
   posts.api:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8002
       - ConnectionStrings__PostsDb=Server=sqlserver_socialmedia,1433;Database=PostsDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
       - ConsulConfig__Host=http://consul_socialmedia
@@ -77,7 +77,7 @@ services:
 
   stories.api:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8005
       - ConnectionStrings__StoriesDb=Server=sqlserver_socialmedia,1433;Database=StoriesDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
       - ConsulConfig__Host=http://consul_socialmedia
@@ -94,7 +94,7 @@ services:
 
   socialmediaapp.aggregator:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8003
       - ConsulConfig__Host=http://consul_socialmedia
       - ConsulConfig__Port=8500
@@ -108,7 +108,7 @@ services:
 
   chat.signalr:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8004
       - ConnectionStrings__ChatDb=Server=sqlserver_socialmedia,1433;Database=ChatDb;User Id=sa;Password=Firat3521;TrustServerCertificate=True
       - ConsulConfig__Host=http://consul_socialmedia

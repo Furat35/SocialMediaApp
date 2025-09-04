@@ -5,7 +5,6 @@ using BuildingBlocks.Models.Constants;
 using IdentityServer.Api.Business.Dtos;
 using IdentityServer.Api.Business.Dtos.AppUsers;
 using IdentityServer.Api.Business.Interfaces;
-using IdentityServer.Api.Data.Context;
 using IdentityServer.Api.Data.Repository;
 using IdentityServer.Api.Models;
 using Microsoft.AspNetCore.StaticFiles;
@@ -14,15 +13,17 @@ using System.Net;
 
 namespace IdentityServer.Api.Business
 {
-    public class UserService(IdentityDbContext context, IHttpContextAccessor httpContext,
-        IServiceProvider serviceProvider, IFileService fileService)
-        : UserRepository(context), IUserService
+    public class UserService(
+        IUserRepository userRepository,
+        IHttpContextAccessor httpContext,
+        IServiceProvider serviceProvider,
+        IFileService fileService)
+        : BaseService<IUserRepository, AppUser>(userRepository), IUserService
     {
         public readonly Lazy<IAuthService> _authService = new(() => serviceProvider.GetRequiredService<IAuthService>());
-
         public async Task<PaginationResponseModel<AppUser>> GetUsers(UserRequestDto request)
         {
-            var users = Get(_ => _.IsValid);
+            var users = Repository.Get(_ => _.IsValid);
 
             if (request.SearchKey is not null)
                 users = users.Where(_ => _.Fullname.Contains(request.SearchKey) || _.Username.Contains(request.SearchKey));
@@ -40,30 +41,30 @@ namespace IdentityServer.Api.Business
         public async Task<ResponseDto<List<int>>> SearchedUserIds(UserRequestDto request)
         {
             if (string.IsNullOrEmpty(request.SearchKey))
-                return ResponseDto<List<int>>.Fail("Search cannot be null or empty", HttpStatusCode.BadRequest);
+                return ToResponse<List<int>>(HttpStatusCode.BadRequest);
 
-            var userIds = await Get(_ => _.IsValid && (_.Fullname.Contains(request.SearchKey) || _.Username.Contains(request.SearchKey)))
+            var userIds = await Repository.Get(_ => _.IsValid && (_.Fullname.Contains(request.SearchKey) || _.Username.Contains(request.SearchKey)))
                 .Select(_ => _.Id)
                 .ToListAsync();
 
-            return ResponseDto<List<int>>.Success(userIds, HttpStatusCode.OK);
+            return ReturnSuccess(userIds, HttpStatusCode.OK);
         }
 
         public async Task<ResponseDto<AppUser>> GetUserById(int userId)
         {
-            var user = await GetByIdAsync(userId);
-            return ResponseDto<AppUser>.Success(user, HttpStatusCode.OK);
+            var user = await Repository.GetByIdAsync(userId);
+            return ReturnSuccess(user, HttpStatusCode.OK);
         }
 
         public async Task<ResponseDto<List<AppUser>>> GetUsersById(List<int> userIds)
         {
-            var users = await Get(_ => userIds.Contains(_.Id)).ToListAsync();
-            return ResponseDto<List<AppUser>>.Success(users, HttpStatusCode.OK);
+            var users = await Repository.Get(_ => userIds.Contains(_.Id)).ToListAsync();
+            return ReturnSuccess(users, HttpStatusCode.OK);
         }
 
         public async Task<ResponseDto<bool>> UpdateUser(AppUserUpdateDto updateDto)
         {
-            var user = await GetById(httpContext.GetUserId());
+            var user = await Repository.GetById(httpContext.GetUserId());
             //validation check must be added
 
             user.Username = updateDto.Username;
@@ -91,17 +92,15 @@ namespace IdentityServer.Api.Business
             catch (Exception ex)
             {
                 fileService.RemoveFile(path);
-                return ResponseDto<bool>.Fail(ex.Message, HttpStatusCode.InternalServerError);
+                return ReturnFail<bool>(ex.Message, HttpStatusCode.InternalServerError);
             }
 
-            return ResponseDto<bool>.GenerateResponse(await SaveChangesAsync() > 0)
-                .Success(true, HttpStatusCode.OK)
-                .Fail("An error occured during save operation", HttpStatusCode.InternalServerError);
+            return await SaveChangesAsync();
         }
 
         public async Task<(byte[] image, string fileType)> GetUserImage(int userId)
         {
-            var user = await GetByIdAsync(userId);
+            var user = await Repository.GetByIdAsync(userId);
             if (!File.Exists(user.ProfileImage))
                 throw new Exception(ErrorMessages.FileNotFound);
 

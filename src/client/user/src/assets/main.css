@@ -747,7 +747,7 @@ body {
   border-radius: 8px 0 0 8px;
 }
 
-.comments-modal > div:not(.post-image) {
+/* .comments-modal > div:not(.post-image) {
   flex: 1 1 50%;
   padding: 2rem 1rem 2rem 2rem;
   overflow-y: auto;
@@ -757,7 +757,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-}
+} */
 
 .add-comment {
   display: flex;
@@ -783,8 +783,8 @@ body {
 
 .close-modal-btn {
   position: absolute;
-  top: -5px;
-  right: 24px;
+  top: 0px;
+  right: 10px;
   background: transparent;
   border: none;
   font-size: 30px;

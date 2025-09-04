@@ -36,7 +36,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chat.SignalR", "src\server\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stories", "Stories", "{F5CD951E-3BBA-44B2-84F1-D28D396A9664}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stories.Api", "src\server\Stories\Stories.Api\Stories.Api.csproj", "{3350BF3C-1B13-4F46-8613-07CCD14D68DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stories.Api", "src\server\Stories\Stories.Api\Stories.Api.csproj", "{3350BF3C-1B13-4F46-8613-07CCD14D68DD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{56A49D09-4711-426E-98D3-66B1855D189D}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,7 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,10 +16,16 @@ namespace BuildingBlocks.Extensions
     {
         public static IServiceCollection ConfigureConsul(this IServiceCollection services, IConfiguration configuration, Action<ConsulClientConfiguration> consulClientConfiguration = null)
         {
-            var address = $"{configuration["ConsulConfig:Host"]}:{configuration["ConsulConfig:Port"]}";
-            var consulClient = new ConsulClientConfiguration { Address = new Uri(address) };
-            if (consulClientConfiguration is not null) consulClientConfiguration(consulClient);
-            services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulClient));
+            var host = configuration["ConsulConfig:Host"];
+            var port = configuration["ConsulConfig:Port"];
+            var address = $"{host}:{port}";
+
+            services.AddSingleton<IConsulClient, ConsulClient>(p =>
+                new ConsulClient(c =>
+                {
+                    c.Address = new Uri(address);
+                    consulClientConfiguration?.Invoke(c);
+                }));
 
             return services;
         }
@@ -29,22 +37,25 @@ namespace BuildingBlocks.Extensions
             var loggingFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
 
             var logger = loggingFactory.CreateLogger<IApplicationBuilder>();
-            //["ASPNETCORE_URLS"] bakılacak
-            // Get server IP
-            int port;
-            if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
+
+            var server = app.ApplicationServices.GetRequiredService<IServer>();
+            var addressesFeature = server.Features.Get<IServerAddressesFeature>();
+            var address = addressesFeature?.Addresses.FirstOrDefault();
+            if (address == null)
             {
-                port = new Uri(configuration["ASPNETCORE_URLS"]).Port;
-            }
-            else
-            {
-                port = int.Parse(configuration["ASPNETCORE_HTTP_PORTS"]!);
+                Console.WriteLine("No server address found for Consul registration.");
+                return app;
             }
 
-            var ip = Dns.GetHostEntry(Dns.GetHostName()).AddressList
-                    .FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork)?.ToString();
-            var address = $"http://{ip}:{port}";
             var uri = new Uri(address);
+            var host = uri.Host;
+            if (host.Contains("::") || host == "0.0.0.0" || host == "localhost")
+            {
+                host = Dns.GetHostEntry(Dns.GetHostName())
+                          .AddressList
+                          .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork)?
+                          .ToString();
+            }
             var currentAssembly = Assembly.GetEntryAssembly().GetName().Name.ToLower();
 
             Console.WriteLine($"Registered {currentAssembly} to address: {address}");
@@ -52,12 +63,12 @@ namespace BuildingBlocks.Extensions
             {
                 ID = $"{currentAssembly}-" + Guid.NewGuid(),
                 Name = currentAssembly,
-                Address = $"{uri.Host}",
+                Address = host,
                 Port = uri.Port,
                 Tags = [currentAssembly],
                 Check = new AgentServiceCheck
                 {
-                    HTTP = $"{uri.Scheme}://{uri.Host}:{uri.Port}/health",
+                    HTTP = $"{uri.Scheme}://{host}:{uri.Port}/health",
                     Interval = TimeSpan.FromSeconds(10),
                     Timeout = TimeSpan.FromSeconds(5),
                     DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(20)
