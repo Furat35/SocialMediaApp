@@ -1,4 +1,5 @@
 using BuildingBlocks.Extensions;
+using BuildingBlocks.Helpers;
 using BuildingBlocks.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using Posts.Api.Extensions;
@@ -15,25 +16,24 @@ builder.Services.AddPostsApiServices(builder.Configuration);
 //    var identityService = await consulClient.ResolveServiceUrl("identityserver.api");
 //    client.BaseAddress = new Uri(identityService);
 //});
-
 builder.Services.AddOpenApiDocument();
+
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
-}
-
-try
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<PostDbContext>();
-    dbContext.Database.Migrate();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Migration failed: {ex.Message}");
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<PostDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
 }
 
 app.HandleException();

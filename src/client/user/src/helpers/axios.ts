@@ -6,12 +6,12 @@ import { toast } from './toast'
 // let accessToken =
 //   localStorageToken != null ? (JSON.parse(localStorageToken) as LoginResponseModel).accessToken : ''
 
-const instance = axios.create({
+const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_GatewayUrl,
   // headers: { Authorization: `Bearer ${useUserStore().getAccessToken}` },
 })
 
-instance.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
   const userStore = useUserStore()
   const token = userStore.getAccessToken
 
@@ -22,7 +22,7 @@ instance.interceptors.request.use((config) => {
   return config
 })
 
-instance.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => response,
   (err) => {
     if (err.response && err.response.status === 401) {
@@ -34,4 +34,4 @@ instance.interceptors.response.use(
   },
 )
 
-export { instance as axios }
+export { axiosInstance }

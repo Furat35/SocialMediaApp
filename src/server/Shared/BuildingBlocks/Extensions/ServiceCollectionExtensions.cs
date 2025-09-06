@@ -1,7 +1,7 @@
 ﻿using Consul;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +18,14 @@ namespace BuildingBlocks.Extensions
         {
             var host = configuration["ConsulConfig:Host"];
             var port = configuration["ConsulConfig:Port"];
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(port))
+            {
+                Console.WriteLine("Consul config missing → skipping registration.");
+                return services;
+            }
+
             var address = $"{host}:{port}";
+
 
             services.AddSingleton<IConsulClient, ConsulClient>(p =>
                 new ConsulClient(c =>
@@ -32,6 +39,12 @@ namespace BuildingBlocks.Extensions
 
         public static IApplicationBuilder AddConsulConfig(this IApplicationBuilder app, IHostApplicationLifetime lifetime, IConfiguration configuration, Action<AgentServiceRegistration> config = null)
         {
+            if (string.IsNullOrWhiteSpace(configuration["ConsulConfig:Host"]) || string.IsNullOrWhiteSpace(configuration["ConsulConfig:Port"]))
+            {
+                Console.WriteLine("Consul config missing → skipping registration.");
+                return app;
+            }
+
             var consulClient = app.ApplicationServices.GetRequiredService<IConsulClient>();
 
             var loggingFactory = app.ApplicationServices.GetRequiredService<ILoggerFactory>();
@@ -89,5 +102,7 @@ namespace BuildingBlocks.Extensions
 
             return app;
         }
+
+
     }
 }

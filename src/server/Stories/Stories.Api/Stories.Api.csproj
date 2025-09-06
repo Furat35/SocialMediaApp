@@ -7,7 +7,7 @@
     <UserSecretsId>bdf26aba-5ca3-4ab9-af15-aecb625b4037</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..\..</DockerfileContext>
-	<GenerateNSwagClient>true</GenerateNSwagClient>
+	<GenerateNSwagClient>false</GenerateNSwagClient>
   </PropertyGroup>
 
 	<ItemGroup>

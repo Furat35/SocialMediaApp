@@ -15,22 +15,21 @@ if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
 }
 
 app.MapHealthChecks("/health");
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
 lifetime.ApplicationStarted.Register(() => app.AddConsulConfig(lifetime, builder.Configuration));
-
-try
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<ChatDbContext>();
-    dbContext.Database.Migrate();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Migration failed: {ex.Message}");
-}
 
 app.UseCors("default");
 

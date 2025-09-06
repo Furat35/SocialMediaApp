@@ -15,16 +15,16 @@ if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
-}
-try
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<StoryDbContext>();
-    dbContext.Database.Migrate();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Migration failed: {ex.Message}");
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StoryDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
 }
 
 app.HandleException();

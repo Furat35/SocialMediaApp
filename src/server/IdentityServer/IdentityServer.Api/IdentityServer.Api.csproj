@@ -8,7 +8,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..\..\..</DockerfileContext>
     <DockerComposeProjectPath>..\..\..\..\docker-compose.dcproj</DockerComposeProjectPath>
-	<GenerateNSwagClient>true</GenerateNSwagClient>
+	<GenerateNSwagClient>false</GenerateNSwagClient>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,11 +31,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
-	<!--<Target Name="NSwag" AfterTargets="Build">
-		<Exec Command="dotnet nswag run $(ProjectDir)nswag.json" />
-	</Target>-->
-	<!--<Target Name="NSwag" AfterTargets="Build">
-		<Exec Command="dotnet nswag run $(SolutionDir)/src/server/Shared/BuildingBlocks/nswag.json /variables:projectName=$(MSBuildProjectDirectory),outputPath=$(SolutionDir)/src/client/src/backendClients/IdentityClient.ts" />
-	</Target>-->
-	
 </Project>

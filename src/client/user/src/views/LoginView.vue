@@ -34,7 +34,6 @@ export default {
   },
   methods: {
     handleLogin() {
-      new LoginResponseModel({})
       this.$bus.emit('isBusy', true);
       this.$axios.post('/auth/login', this.loginModel)
         .then((response) => {

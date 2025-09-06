@@ -33,8 +33,15 @@ namespace BuildingBlocks.Middlewares
                            if (string.IsNullOrEmpty(errorMessage))
                                errorMessage = ErrorMessages.InternalServerError;
 
+                           var options = new JsonSerializerOptions
+                           {
+                               PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                               WriteIndented = false
+                           };
+
                            await context.Response
-                               .WriteAsync(JsonSerializer.Serialize(ResponseDto<bool>.Fail(errorMessage, (HttpStatusCode)context.Response.StatusCode)))
+                               .WriteAsync(JsonSerializer.Serialize(
+                                   ResponseDto<bool>.Fail(errorMessage, (HttpStatusCode)context.Response.StatusCode), options))
                                .ConfigureAwait(false);
                        }
                    });

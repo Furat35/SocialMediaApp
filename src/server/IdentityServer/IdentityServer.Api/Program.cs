@@ -16,23 +16,22 @@ if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
+    try
+    {
+        using var scope = app.Services.CreateScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
+        dbContext.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
 }
 
 
 app.HandleException();
 app.UseAuthentication();
 app.UseAuthorization();
-
-try
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<IdentityDbContext>();
-    dbContext.Database.Migrate();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Migration failed: {ex.Message}");
-}
 
 app.MapHealthChecks("/health");
 var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();

@@ -6,30 +6,22 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/Posts": {
+    "/api/Chats/{userId}": {
       "get": {
         "tags": [
-          "Posts"
+          "Chats"
         ],
-        "operationId": "Posts_GetPostsByUserId",
+        "operationId": "Chats_GetMessages",
         "parameters": [
           {
-            "name": "UserId",
-            "in": "query",
+            "name": "userId",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "integer",
               "format": "int32"
             },
             "x-position": 1
-          },
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
           },
           {
             "name": "Page",
@@ -38,7 +30,7 @@
               "type": "integer",
               "format": "int32"
             },
-            "x-position": 3
+            "x-position": 2
           },
           {
             "name": "PageSize",
@@ -47,7 +39,7 @@
               "type": "integer",
               "format": "int32"
             },
-            "x-position": 4
+            "x-position": 3
           }
         ],
         "responses": {
@@ -56,100 +48,55 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginationResponseModelOfPostListDto"
+                  "$ref": "#/components/schemas/PaginationResponseModelOfMessage"
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/api/Chats/lastChats-byUserIds": {
       "post": {
         "tags": [
-          "Posts"
+          "Chats"
         ],
-        "operationId": "Posts_CreatePost",
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "Description": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "Location": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "File": {
-                    "type": "string",
-                    "format": "binary",
-                    "nullable": true
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfCreatePostCommandResponse"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_DeletePost",
+        "operationId": "Chats_GetLastChatsByUserIds",
         "parameters": [
           {
-            "name": "Id",
+            "name": "Page",
             "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
             },
             "x-position": 1
+          },
+          {
+            "name": "PageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "x-position": 2
           }
         ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_UpdatePost",
         "requestBody": {
-          "x-name": "request",
+          "x-name": "userIds",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdatePostCommand"
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
               }
             }
           },
           "required": true,
-          "x-position": 1
+          "x-position": 3
         },
         "responses": {
           "200": {
@@ -157,7 +104,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
+                  "$ref": "#/components/schemas/PaginationResponseModelOfMessage"
                 }
               }
             }
@@ -165,12 +112,12 @@
         }
       }
     },
-    "/api/Posts/follower-posts": {
+    "/api/Chats/lastChats": {
       "get": {
         "tags": [
-          "Posts"
+          "Chats"
         ],
-        "operationId": "Posts_GetFollowerPosts",
+        "operationId": "Chats_LastChats",
         "parameters": [
           {
             "name": "Page",
@@ -197,7 +144,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginationResponseModelOfPostListDto"
+                  "$ref": "#/components/schemas/PaginationResponseModelOfMessage"
                 }
               }
             }
@@ -205,220 +152,26 @@
         }
       }
     },
-    "/api/Posts/image": {
-      "get": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_GetPostImage",
-        "parameters": [
-          {
-            "name": "PostId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/octet-stream": {
-                "schema": {
-                  "type": "string",
-                  "format": "binary"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Posts/like": {
+    "/api/Chats/set-read": {
       "post": {
         "tags": [
-          "Posts"
+          "Chats"
         ],
-        "operationId": "Posts_LikePost",
+        "operationId": "Chats_SetMessagesAsRead",
         "parameters": [
           {
-            "name": "PostId",
+            "name": "userId",
             "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
             },
             "x-position": 1
-          },
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
           }
         ],
         "responses": {
           "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Posts/unlike": {
-      "post": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_UnlikePost",
-        "parameters": [
-          {
-            "name": "PostId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Posts/add-comment": {
-      "post": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_AddPostComment",
-        "parameters": [
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "PostId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
-          },
-          {
-            "name": "UserComment",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/Posts/remove-comment": {
-      "post": {
-        "tags": [
-          "Posts"
-        ],
-        "operationId": "Posts_RemovePostComment",
-        "parameters": [
-          {
-            "name": "PostId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 1
-          },
-          {
-            "name": "CommentId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 2
-          },
-          {
-            "name": "FollowerId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            },
-            "x-position": 3
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ResponseDtoOfBoolean"
-                }
-              }
-            }
+            "description": ""
           }
         }
       }
@@ -426,7 +179,7 @@
   },
   "components": {
     "schemas": {
-      "PaginationResponseModelOfPostListDto": {
+      "PaginationResponseModelOfMessage": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -434,7 +187,7 @@
             "type": "array",
             "nullable": true,
             "items": {
-              "$ref": "#/components/schemas/PostListDto"
+              "$ref": "#/components/schemas/Message"
             }
           },
           "page": {
@@ -464,7 +217,7 @@
           }
         }
       },
-      "PostListDto": {
+      "Message": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -472,572 +225,23 @@
             "type": "integer",
             "format": "int32"
           },
-          "userId": {
+          "from": {
             "type": "integer",
             "format": "int32"
           },
-          "fullname": {
+          "to": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userMessage": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
+          "isRead": {
+            "type": "boolean"
           },
-          "location": {
-            "type": "string"
-          },
-          "createDate": {
+          "sentDate": {
             "type": "string",
             "format": "date-time"
-          },
-          "likes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/LikeListDto"
-            }
-          },
-          "comments": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CommentListDto"
-            }
-          }
-        }
-      },
-      "LikeListDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "postId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "CommentListDto": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userComment": {
-            "type": "string"
-          },
-          "postId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "createDate": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "ResponseDtoOfCreatePostCommandResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "statusCode": {
-            "$ref": "#/components/schemas/HttpStatusCode"
-          },
-          "errorMessages": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "isError": {
-            "type": "boolean"
-          },
-          "data": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CreatePostCommandResponse"
-              }
-            ]
-          }
-        }
-      },
-      "HttpStatusCode": {
-        "type": "integer",
-        "description": "",
-        "x-enum-names": [
-          "Continue",
-          "SwitchingProtocols",
-          "Processing",
-          "EarlyHints",
-          "OK",
-          "Created",
-          "Accepted",
-          "NonAuthoritativeInformation",
-          "NoContent",
-          "ResetContent",
-          "PartialContent",
-          "MultiStatus",
-          "AlreadyReported",
-          "IMUsed",
-          "MultipleChoices",
-          "Ambiguous",
-          "MovedPermanently",
-          "Moved",
-          "Found",
-          "Redirect",
-          "SeeOther",
-          "RedirectMethod",
-          "NotModified",
-          "UseProxy",
-          "Unused",
-          "TemporaryRedirect",
-          "RedirectKeepVerb",
-          "PermanentRedirect",
-          "BadRequest",
-          "Unauthorized",
-          "PaymentRequired",
-          "Forbidden",
-          "NotFound",
-          "MethodNotAllowed",
-          "NotAcceptable",
-          "ProxyAuthenticationRequired",
-          "RequestTimeout",
-          "Conflict",
-          "Gone",
-          "LengthRequired",
-          "PreconditionFailed",
-          "RequestEntityTooLarge",
-          "RequestUriTooLong",
-          "UnsupportedMediaType",
-          "RequestedRangeNotSatisfiable",
-          "ExpectationFailed",
-          "MisdirectedRequest",
-          "UnprocessableEntity",
-          "UnprocessableContent",
-          "Locked",
-          "FailedDependency",
-          "UpgradeRequired",
-          "PreconditionRequired",
-          "TooManyRequests",
-          "RequestHeaderFieldsTooLarge",
-          "UnavailableForLegalReasons",
-          "InternalServerError",
-          "NotImplemented",
-          "BadGateway",
-          "ServiceUnavailable",
-          "GatewayTimeout",
-          "HttpVersionNotSupported",
-          "VariantAlsoNegotiates",
-          "InsufficientStorage",
-          "LoopDetected",
-          "NotExtended",
-          "NetworkAuthenticationRequired"
-        ],
-        "x-enum-varnames": [
-          "Continue",
-          "SwitchingProtocols",
-          "Processing",
-          "EarlyHints",
-          "OK",
-          "Created",
-          "Accepted",
-          "NonAuthoritativeInformation",
-          "NoContent",
-          "ResetContent",
-          "PartialContent",
-          "MultiStatus",
-          "AlreadyReported",
-          "IMUsed",
-          "MultipleChoices",
-          "Ambiguous",
-          "MovedPermanently",
-          "Moved",
-          "Found",
-          "Redirect",
-          "SeeOther",
-          "RedirectMethod",
-          "NotModified",
-          "UseProxy",
-          "Unused",
-          "TemporaryRedirect",
-          "RedirectKeepVerb",
-          "PermanentRedirect",
-          "BadRequest",
-          "Unauthorized",
-          "PaymentRequired",
-          "Forbidden",
-          "NotFound",
-          "MethodNotAllowed",
-          "NotAcceptable",
-          "ProxyAuthenticationRequired",
-          "RequestTimeout",
-          "Conflict",
-          "Gone",
-          "LengthRequired",
-          "PreconditionFailed",
-          "RequestEntityTooLarge",
-          "RequestUriTooLong",
-          "UnsupportedMediaType",
-          "RequestedRangeNotSatisfiable",
-          "ExpectationFailed",
-          "MisdirectedRequest",
-          "UnprocessableEntity",
-          "UnprocessableContent",
-          "Locked",
-          "FailedDependency",
-          "UpgradeRequired",
-          "PreconditionRequired",
-          "TooManyRequests",
-          "RequestHeaderFieldsTooLarge",
-          "UnavailableForLegalReasons",
-          "InternalServerError",
-          "NotImplemented",
-          "BadGateway",
-          "ServiceUnavailable",
-          "GatewayTimeout",
-          "HttpVersionNotSupported",
-          "VariantAlsoNegotiates",
-          "InsufficientStorage",
-          "LoopDetected",
-          "NotExtended",
-          "NetworkAuthenticationRequired"
-        ],
-        "x-enumNames": [
-          "Continue",
-          "SwitchingProtocols",
-          "Processing",
-          "EarlyHints",
-          "OK",
-          "Created",
-          "Accepted",
-          "NonAuthoritativeInformation",
-          "NoContent",
-          "ResetContent",
-          "PartialContent",
-          "MultiStatus",
-          "AlreadyReported",
-          "IMUsed",
-          "MultipleChoices",
-          "Ambiguous",
-          "MovedPermanently",
-          "Moved",
-          "Found",
-          "Redirect",
-          "SeeOther",
-          "RedirectMethod",
-          "NotModified",
-          "UseProxy",
-          "Unused",
-          "TemporaryRedirect",
-          "RedirectKeepVerb",
-          "PermanentRedirect",
-          "BadRequest",
-          "Unauthorized",
-          "PaymentRequired",
-          "Forbidden",
-          "NotFound",
-          "MethodNotAllowed",
-          "NotAcceptable",
-          "ProxyAuthenticationRequired",
-          "RequestTimeout",
-          "Conflict",
-          "Gone",
-          "LengthRequired",
-          "PreconditionFailed",
-          "RequestEntityTooLarge",
-          "RequestUriTooLong",
-          "UnsupportedMediaType",
-          "RequestedRangeNotSatisfiable",
-          "ExpectationFailed",
-          "MisdirectedRequest",
-          "UnprocessableEntity",
-          "UnprocessableContent",
-          "Locked",
-          "FailedDependency",
-          "UpgradeRequired",
-          "PreconditionRequired",
-          "TooManyRequests",
-          "RequestHeaderFieldsTooLarge",
-          "UnavailableForLegalReasons",
-          "InternalServerError",
-          "NotImplemented",
-          "BadGateway",
-          "ServiceUnavailable",
-          "GatewayTimeout",
-          "HttpVersionNotSupported",
-          "VariantAlsoNegotiates",
-          "InsufficientStorage",
-          "LoopDetected",
-          "NotExtended",
-          "NetworkAuthenticationRequired"
-        ],
-        "x-enum-descriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
-        ],
-        "x-enumDescriptions": [
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null
-        ],
-        "enum": [
-          100,
-          101,
-          102,
-          103,
-          200,
-          201,
-          202,
-          203,
-          204,
-          205,
-          206,
-          207,
-          208,
-          226,
-          300,
-          300,
-          301,
-          301,
-          302,
-          302,
-          303,
-          303,
-          304,
-          305,
-          306,
-          307,
-          307,
-          308,
-          400,
-          401,
-          402,
-          403,
-          404,
-          405,
-          406,
-          407,
-          408,
-          409,
-          410,
-          411,
-          412,
-          413,
-          414,
-          415,
-          416,
-          417,
-          421,
-          422,
-          422,
-          423,
-          424,
-          426,
-          428,
-          429,
-          431,
-          451,
-          500,
-          501,
-          502,
-          503,
-          504,
-          505,
-          506,
-          507,
-          508,
-          510,
-          511
-        ]
-      },
-      "CreatePostCommandResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "success": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ResponseDtoOfBoolean": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "statusCode": {
-            "$ref": "#/components/schemas/HttpStatusCode"
-          },
-          "errorMessages": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "isError": {
-            "type": "boolean"
-          },
-          "data": {
-            "type": "boolean"
-          }
-        }
-      },
-      "UpdatePostCommand": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "description": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string"
           }
         }
       }
